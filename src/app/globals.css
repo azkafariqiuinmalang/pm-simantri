@@ -1,0 +1,842 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+/* Experience tokens: shared timing, no change to the approved visual palette. */
+:root {
+  --motion-fast: 140ms;
+  --motion-normal: 220ms;
+  --motion-medium: 320ms;
+  --motion-reveal: 420ms;
+  --motion-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-control: var(--motion-normal);
+  --motion-overlay: var(--motion-medium);
+}
+
+@theme {
+  --font-jakarta: var(--font-plus-jakarta-sans), sans-serif;
+  --font-editorial: var(--font-newsreader), Georgia, serif;
+  --font-manrope: var(--font-manrope), sans-serif;
+  --font-handwriting: var(--font-caveat), cursive;
+  --font-serif: var(--font-serif), Georgia, serif;
+
+  --color-simantri-50: #eef8f2;
+  --color-simantri-100: #d8f0e2;
+  --color-simantri-200: #b4e2c8;
+  --color-simantri-300: #7ed9a0;
+  --color-simantri-400: #34b36d;
+  --color-simantri-500: #167a4a;
+  --color-simantri-600: #12683e;
+  --color-simantri-700: #0e5b38;
+  --color-simantri-800: #0b472c;
+  --color-simantri-900: #07321f;
+
+  --color-shallot-50: #fdf2f4;
+  --color-shallot-100: #fbe6eb;
+  --color-shallot-200: #f7ced8;
+  --color-shallot-300: #f29db4;
+  --color-shallot-400: #e4668b;
+  --color-shallot-500: #a63c5d;
+  --color-shallot-600: #8c2e4c;
+  --color-shallot-700: #74233e;
+  --color-shallot-800: #601e34;
+  --color-shallot-900: #3f1021;
+}
+
+.hero-mask {
+  background: linear-gradient(180deg, rgba(7, 50, 31, 0.45) 0%, rgba(11, 71, 44, 0.6) 45%, rgba(6, 31, 20, 0.94) 100%);
+}
+
+.font-jakarta {
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
+}
+
+.font-editorial {
+  font-family: var(--font-newsreader), Georgia, serif;
+}
+.font-manrope {
+  font-family: var(--font-manrope), sans-serif;
+}
+.font-handwriting {
+  font-family: var(--font-caveat), cursive;
+}
+
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition-duration: var(--motion-control);
+  transition-timing-function: var(--motion-standard);
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--color-simantri-500);
+  outline-offset: 3px;
+}
+button:disabled { cursor: not-allowed; }
+button, a[role="button"] { min-height: 44px; min-width: 44px; }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  transition: border-color var(--motion-control), background-color var(--motion-control), box-shadow var(--motion-control);
+}
+.sim-interactive-card { transition: transform 260ms var(--motion-out), border-color var(--motion-normal); }
+.sim-message, .sim-result, .sim-toast, [role="alert"] { animation: sim-experience-enter var(--motion-medium) var(--motion-out) both; }
+.sim-typing-dot { animation: sim-typing 1200ms ease-in-out infinite; }
+.sim-confidence { transform-origin: left; animation: sim-confidence var(--motion-reveal) var(--motion-out) both; }
+.sim-skeleton { border-radius: 12px; background: var(--color-simantri-100); animation: sim-skeleton 1800ms ease-in-out infinite; }
+.sim-toast { position: fixed; z-index: 80; right: 24px; top: 96px; display: flex; align-items: center; gap: 12px; max-width: min(420px, calc(100vw - 32px)); padding: 12px 16px; border: 1px solid var(--color-simantri-200); border-radius: 16px; background: white; color: var(--color-simantri-900); box-shadow: 0 6px 24px #07321f15; font-size: 14px; }
+.sim-toast button { display: flex; align-items: center; justify-content: center; min-width: 44px; }
+.sim-toast.sim-toast-closing { animation: sim-toast-exit 220ms var(--motion-standard) forwards; }
+@keyframes sim-toast-exit { from { opacity: 1; } to { opacity: 0; } }
+.sim-reveal-pending { opacity: 0; transform: translateY(16px); }
+.sim-reveal-visible { animation: sim-section-enter var(--motion-reveal) var(--motion-out) both; }
+#landing-content { --landing-entrance-distance: 24px; }
+#landing-content [data-entrance-pending] { opacity: 0; translate: 0 var(--landing-entrance-distance); }
+@media (max-width: 639px) {
+  #landing-content { --landing-entrance-distance: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #landing-content [data-entrance-pending] { opacity: 1; translate: none; }
+}
+@media print {
+  #landing-content [data-entrance-pending] { opacity: 1; translate: none; }
+}
+.sim-tooltip { animation: sim-experience-enter var(--motion-fast) var(--motion-out) both; }
+@keyframes sim-experience-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sim-section-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sim-typing { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+@keyframes sim-confidence { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sim-skeleton { 0%, 100% { opacity: .55; } 50% { opacity: .85; } }
+@media (hover: hover) {
+  .sim-interactive-card:hover { transform: translateY(-2px); border-color: var(--color-simantri-200); }
+  .sim-button-primary:hover:not(:disabled) { transform: translateY(-1px); }
+  a:hover > .lucide-arrow-right, a:hover > .lucide-chevron-right { transform: translateX(3px); }
+  a > .lucide-arrow-right, a > .lucide-chevron-right { transition: transform var(--motion-normal) var(--motion-out); }
+}
+.sim-button-primary:active:not(:disabled), .hover-btn-scale:active, .hover-btn-coral:active { transform: translateY(0) !important; }
+.carousel-container:focus-within .carousel-track { animation-play-state: paused; }
+@media (max-width: 639px) {
+  .sim-toast { left: 16px; right: 16px; top: 88px; max-width: none; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .sim-reveal-pending { opacity: 1; transform: none; }
+  .sim-interactive-card:hover, .hover-btn-scale:hover, .hover-btn-coral:hover { transform: none !important; }
+}
+
+@keyframes scrollCards {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.carousel-container {
+  overflow: hidden;
+  padding-top: 5rem;
+  padding-bottom: 3.5rem;
+  position: relative;
+}
+
+.carousel-track {
+  display: flex;
+  width: max-content;
+  animation: scrollCards 38s linear infinite;
+  will-change: transform;
+}
+
+.carousel-container:hover .carousel-track,
+.carousel-container[data-pointer-hover] .carousel-track {
+  animation-play-state: paused;
+}
+
+.carousel-card {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
+  will-change: transform;
+  transform: translateZ(0);
+  translate: 0 var(--carousel-arc-y, 0px);
+}
+
+.carousel-card { cursor: default !important; }
+
+.carousel-card-img {
+  transition: transform 0.6s ease-out !important;
+  transform: scale(1);
+}
+
+/* Include a mouse attached to a touch-first laptop/tablet, not only the primary pointer. */
+@media (any-hover: hover) and (any-pointer: fine) {
+  .carousel-card:hover {
+    transform: translateY(-8px) scale(1.12);
+    z-index: 50;
+  }
+
+  .carousel-card:hover .carousel-card-img {
+    transform: scale(1.16);
+  }
+}
+
+.carousel-card[data-pointer-hover] {
+  transform: translateY(-8px) scale(1.12);
+  z-index: 50;
+}
+.carousel-card[data-pointer-hover] .carousel-card-img { transform: scale(1.16); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Stop continuous movement, but retain the user's requested static hover enlargement. */
+  .carousel-track {
+    animation: none;
+    will-change: auto;
+  }
+
+  .carousel-card,
+  .carousel-card-img {
+    transition: none !important;
+  }
+
+  .carousel-container {
+    overflow-x: auto;
+  }
+}
+
+/* Enhanced Interactive Hover Effects for Buttons & Cards */
+.hover-btn-scale {
+  transition: transform var(--motion-normal) var(--motion-standard), background-color var(--motion-normal) var(--motion-standard) !important;
+  cursor: pointer;
+}
+
+.hover-btn-scale:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px -4px rgba(23, 62, 45, 0.2) !important;
+}
+
+.hover-btn-scale:active {
+  transform: translateY(0) !important;
+}
+
+.hover-btn-coral {
+  transition: transform var(--motion-normal) var(--motion-standard), background-color var(--motion-normal) var(--motion-standard) !important;
+  cursor: pointer;
+}
+
+.hover-btn-coral:hover {
+  transform: translateY(-1px) !important;
+  background-color: #d04b47 !important;
+  box-shadow: 0 4px 10px -4px rgba(226, 92, 88, 0.2) !important;
+}
+
+.hover-btn-coral:active {
+  transform: translateY(0) !important;
+}
+
+.hover-card-lift {
+  transition: border-color var(--motion-normal) var(--motion-standard) !important;
+}
+
+.hover-card-lift:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes sim-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes sim-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes sim-draw {
+  from {
+    stroke-dasharray: 980;
+    stroke-dashoffset: 980;
+  }
+  to {
+    stroke-dasharray: 980;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sim-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sima-subtle-breathe {
+  0%, 100% {
+    transform: scale(1.00);
+  }
+  50% {
+    transform: scale(1.005);
+  }
+}
+
+.animate-sima-subtle-breathe {
+  animation: sima-subtle-breathe 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sima-subtle-breathe {
+    animation: none !important;
+  }
+}
+
+@keyframes sim-spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-sim-float {
+  animation: sim-float 6s ease-in-out infinite;
+}
+
+.animate-sim-pulse {
+  animation: sim-pulse 2s ease-out infinite;
+}
+
+.animate-sim-draw {
+  animation: sim-draw 1.8s ease-in-out both;
+}
+
+.animate-sim-fade-up {
+  animation: sim-fade-up 900ms ease-out both;
+}
+
+.animate-sim-spin-slow {
+  animation: sim-spin-slow 28s linear infinite;
+}
+
+.museum-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@theme {
+  --color-cream: #FBF4EE;
+  --color-maroon: #4A1F2B;
+  --color-shallot-pink: #C4487A;
+  --color-earth-brown: #3D261A;
+  --color-soft-green: #3A5A40;
+  --color-deep-dark: #0E080A;
+  --color-golden-glow: #E6A15C;
+}
+
+.glass-panel {
+  background: rgba(251, 244, 238, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(251, 244, 238, 0.08);
+}
+
+.glass-panel-dark {
+  background: rgba(14, 8, 10, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(196, 72, 122, 0.15);
+}
+
+.ambient-spotlight {
+  background: radial-gradient(circle at 50% 50%, rgba(196, 72, 122, 0.15) 0%, rgba(14, 8, 10, 0) 70%);
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.font-fraunces {
+  font-family: var(--font-serif), 'Fraunces', serif;
+}
+
+@layer base {
+  :root {
+    --color-shallot-pink: #C4487A;
+    --color-shallot-hover: #A83A68;
+    --color-shallot-active: #8C2E56;
+    
+    --color-maroon: #4A1F2B;
+    --color-soft-green: #3A5A40;
+    --color-golden-glow: #E6A15C;
+    --color-earth-brown: #3D261A;
+    --color-deep-dark: #0E080A;
+    --color-warm-charcoal: #4A3A32;
+    --color-cream: #FBF4EE;
+    --color-light-tan: #E5DFD6;
+    --color-muted-gray: #8A8580;
+    --color-error: #8C3A3A;
+
+    /* SIMANTRI application primitives */
+    --sim-green-50: #F2F8F3;
+    --sim-green-100: #E5F2E8;
+    --sim-green-200: #CDE6D3;
+    --sim-green-500: #26934A;
+    --sim-green-600: #157A3A;
+    --sim-green-700: #0E6330;
+    --sim-green-900: #083F25;
+    --sim-ink: #101828;
+    --sim-text: #344054;
+    --sim-muted: #667085;
+    --sim-line: #E4E9E5;
+    --sim-canvas: #F6F8F5;
+    --sim-surface: #FFFFFF;
+    --sim-rose-50: #FFF1F4;
+    --sim-rose-500: #C4487A;
+    --sim-amber-50: #FFF8E8;
+    --sim-amber-500: #C98216;
+    --sim-blue-50: #EFF7FF;
+    --sim-blue-600: #1769AA;
+
+    /* SIMANTRI semantic tokens */
+    --sim-color-primary: var(--sim-green-600);
+    --sim-color-primary-hover: var(--sim-green-700);
+    --sim-color-primary-soft: var(--sim-green-50);
+    --sim-color-background: var(--sim-canvas);
+    --sim-color-surface: var(--sim-surface);
+    --sim-color-foreground: var(--sim-ink);
+    --sim-color-body: var(--sim-text);
+    --sim-color-muted: var(--sim-muted);
+    --sim-color-border: var(--sim-line);
+    --sim-radius-control: 1rem;
+    --sim-radius-card: 1.5rem;
+    --sim-radius-panel: 2rem;
+    --sim-shadow-card: 0 10px 35px -24px rgba(13, 60, 36, 0.28);
+    --sim-shadow-float: 0 24px 70px -28px rgba(5, 42, 23, 0.42);
+  }
+}
+
+@layer components {
+  .sim-app {
+    background: var(--sim-color-background);
+    color: var(--sim-color-foreground);
+  }
+
+  .sim-page {
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding: 1.25rem;
+  }
+
+  .sim-card {
+    border: 1px solid var(--sim-color-border);
+    border-radius: var(--sim-radius-card);
+    background: var(--sim-color-surface);
+    box-shadow: var(--sim-shadow-card);
+  }
+
+  .sim-card-flat {
+    border: 1px solid var(--sim-color-border);
+    border-radius: var(--sim-radius-card);
+    background: var(--sim-color-surface);
+  }
+
+  .sim-icon-tile {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.875rem;
+    background: var(--sim-color-primary-soft);
+    color: var(--sim-color-primary);
+  }
+
+  .sim-button-primary {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--sim-radius-control);
+    background: var(--sim-color-primary);
+    padding: 0.7rem 1rem;
+    color: #fff;
+    font-weight: 700;
+    transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  }
+
+  .sim-button-primary:hover:not(:disabled) {
+    background: var(--sim-color-primary-hover);
+    box-shadow: 0 10px 24px -14px rgba(14, 99, 48, 0.75);
+  }
+
+  .sim-button-primary:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .sim-button-primary:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
+
+  .sim-button-secondary {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid var(--sim-color-border);
+    border-radius: var(--sim-radius-control);
+    background: #fff;
+    padding: 0.7rem 1rem;
+    color: var(--sim-color-body);
+    font-weight: 650;
+    transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+  }
+
+  .sim-button-secondary:hover:not(:disabled) {
+    border-color: var(--sim-green-200);
+    background: var(--sim-green-50);
+    color: var(--sim-color-primary-hover);
+  }
+
+  .sim-focus {
+    outline: none;
+  }
+
+  .sim-focus:focus-visible {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(21, 122, 58, 0.48);
+  }
+
+  .sim-muted {
+    color: var(--sim-color-muted);
+  }
+
+  .sim-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (min-width: 640px) {
+    .sim-page {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .sim-page {
+      padding: 2rem;
+    }
+  }
+}
+
+.font-serif {
+  font-family: var(--font-serif), 'Fraunces', Georgia, serif;
+}
+
+.font-sans {
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Design System Component Utilities */
+.btn-primary {
+  background-color: #C4487A;
+  color: #FFFFFF;
+  border: 2px solid #C4487A;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: #A83A68;
+  border-color: #A83A68;
+}
+.btn-primary:active:not(:disabled) {
+  background-color: #8C2E56;
+  border-color: #8C2E56;
+}
+.btn-primary:disabled {
+  background-color: #CCCCCC;
+  border-color: #CCCCCC;
+  color: #808080;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #C4487A;
+  border: 2px solid #C4487A;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(196, 72, 122, 0.08);
+  color: #A83A68;
+}
+.btn-secondary:active:not(:disabled) {
+  background-color: rgba(196, 72, 122, 0.15);
+  color: #8C2E56;
+}
+
+.card-standard {
+  background-color: #FFFFFF;
+  color: #4A3A32;
+  border: 1px solid #E5DFD6;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.input-standard {
+  background-color: #FFFFFF;
+  color: #0E080A;
+  border: 1px solid #8A8580;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.input-standard:focus {
+  border-color: #C4487A;
+  box-shadow: 0px 0px 0px 3px rgba(196, 72, 122, 0.12);
+}
+.input-standard.error {
+  border-color: #8C3A3A;
+  box-shadow: 0px 0px 0px 3px rgba(140, 58, 58, 0.12);
+}
+
+/* ==========================================================================
+   SIMANTRI Interactive Hover System
+   ========================================================================== */
+
+.nav-link-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.15rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(36, 24, 18, 0.8);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+.nav-link-pill:hover {
+  background-color: #C4487A !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px -4px rgba(196, 72, 122, 0.45);
+}
+.nav-link-pill:active {
+  transform: scale(0.96);
+}
+
+.nav-link-pill-hero {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.15rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+}
+.nav-link-pill-hero:hover {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3);
+}
+.nav-link-pill-hero:active {
+  transform: scale(0.96);
+}
+
+.simantri-card-hover {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform, box-shadow, border-color;
+}
+.simantri-card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #A6304F !important;
+  box-shadow: 0 24px 48px -12px rgba(166, 48, 79, 0.3) !important;
+}
+.simantri-card-hover:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.simantri-feature-card-hover {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform, box-shadow, border-color;
+}
+.simantri-feature-card-hover:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: #A6304F !important;
+  box-shadow: 0 28px 56px -14px rgba(166, 48, 79, 0.35), 0 0 0 1px rgba(166, 48, 79, 0.25) !important;
+}
+.simantri-feature-card-hover:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.simantri-dark-card-hover {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.simantri-dark-card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  background-color: #38241b !important;
+  border-color: #E6A15C !important;
+  box-shadow: 0 24px 48px -12px rgba(230, 161, 92, 0.35) !important;
+}
+
+.simantri-step-card-hover {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform, box-shadow, border-color;
+}
+.simantri-step-card-hover:hover {
+  transform: translateY(-8px) scale(1.03);
+  background-color: #FFFFFF !important;
+  border-color: #A6304F !important;
+  box-shadow: 0 24px 48px -12px rgba(166, 48, 79, 0.3) !important;
+}
+.simantri-step-card-hover:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.simantri-timeline-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform, box-shadow, border-color;
+}
+.simantri-timeline-card-hover:hover {
+  transform: translateX(6px) translateY(-2px);
+  background-color: #FFFDF8 !important;
+  border-color: #A6304F !important;
+  box-shadow: 0 18px 36px -10px rgba(166, 48, 79, 0.28) !important;
+}
+.simantri-timeline-card-hover:active {
+  transform: scale(0.98);
+}
+
+.simantri-persona-card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  will-change: transform, box-shadow;
+}
+.simantri-persona-card-hover:hover {
+  transform: translateY(-10px) scale(1.025);
+  box-shadow: 0 32px 64px -16px rgba(36, 24, 18, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+}
+.simantri-persona-card-hover:active {
+  transform: translateY(-3px) scale(0.99);
+}
+
+/* Landing Page Sticky Glass Header */
+.landing-glass-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-glass-header.is-at-top {
+  background-color: rgba(18, 7, 10, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.landing-glass-header.is-scrolled {
+  background-color: rgba(246, 236, 223, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(36, 24, 18, 0.12) !important;
+  box-shadow: 0 12px 32px -10px rgba(36, 24, 18, 0.15) !important;
+}
+
+/* 3D Tilt Card & Cursor Glare */
+:root {
+  --tilt-perspective: 750px;
+  --tilt-return: 800ms;
+  --tilt-return-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tilt-follow: 250ms;
+  --tilt-follow-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tilt-glare-opacity: 0.38;
+  --tilt-glare-fade: 300ms;
+  --tilt-glare-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-tilt {
+  touch-action: none;
+}
+
+.t-tilt-card {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  transform:
+    perspective(var(--tilt-perspective, 1000px))
+    rotateX(var(--tilt-rx, 0deg))
+    rotateY(var(--tilt-ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform var(--tilt-return) var(--tilt-return-ease);
+  will-change: transform;
+}
+
+.t-tilt-card.is-tilting {
+  transition: transform var(--tilt-follow) var(--tilt-follow-ease);
+}
+
+.t-tilt-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle 100px at var(--tilt-gx, 50%) var(--tilt-gy, 50%),
+      rgba(255,255,255,0.6), rgba(255,255,255,0.08) 52%, rgba(255,255,255,0) 84%),
+    radial-gradient(circle 220px at var(--tilt-gx, 50%) var(--tilt-gy, 50%),
+      rgba(255,255,255,0.22), rgba(255,255,255,0.04) 58%, rgba(255,255,255,0) 78%),
+    radial-gradient(circle 360px at var(--tilt-gx, 50%) var(--tilt-gy, 50%),
+      rgba(255,255,255,0.1), rgba(255,255,255,0) 88%);
+  transition: opacity var(--tilt-glare-fade) var(--tilt-glare-ease);
+}
+
+.t-tilt.is-hover .t-tilt-glare {
+  opacity: var(--tilt-glare-opacity);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tilt-card {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+
+

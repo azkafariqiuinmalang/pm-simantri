@@ -1,0 +1,291 @@
+{
+  "Root": "D:\\SEMESTER 5\\PROJECT MANEJEMEN\\PM (SIMANTRI)",
+  "Applied": true,
+  "BeforeBytes": 3384123381,
+  "BeforeFiles": 63715,
+  "AfterBytes": 722492713,
+  "AfterFiles": 35854,
+  "RemovedBytes": 2661630668,
+  "ProtectedFilesChecked": 50,
+  "OriginalEnvUnchanged": true,
+  "Inventory": [
+    {
+      "Path": ".next",
+      "Files": 2756,
+      "Bytes": 1770349086,
+      "Mode": "Regenerable output: permanent"
+    },
+    {
+      "Path": "tsconfig.tsbuildinfo",
+      "Files": 1,
+      "Bytes": 385575,
+      "Mode": "Regenerable output: permanent"
+    },
+    {
+      "Path": "remotion-video",
+      "Files": 20091,
+      "Bytes": 598110575,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "scratch",
+      "Files": 4963,
+      "Bytes": 244526376,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "ml",
+      "Files": 2,
+      "Bytes": 12402,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\api",
+      "Files": 4,
+      "Bytes": 13179,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\architecture",
+      "Files": 8,
+      "Bytes": 794799,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\design",
+      "Files": 6,
+      "Bytes": 12201147,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\product",
+      "Files": 1,
+      "Bytes": 5244,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\database\\archive",
+      "Files": 3,
+      "Bytes": 29168,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "docs\\database\\simantri_schema_v4.sql",
+      "Files": 1,
+      "Bytes": 8007,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "PRD.md",
+      "Files": 1,
+      "Bytes": 12233,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "PROGRESS_REPORT.md",
+      "Files": 1,
+      "Bytes": 6090,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "QUERY_GUIDELINES.md",
+      "Files": 1,
+      "Bytes": 7743,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "src\\SIMANTRI_Market_Insight_Scrapper_Implementation.md",
+      "Files": 1,
+      "Bytes": 15061,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "src\\components\\landing\\PlatformVideoDemo.tsx",
+      "Files": 1,
+      "Bytes": 5161,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "src\\components\\ui\\TiltCard.tsx",
+      "Files": 1,
+      "Bytes": 1807,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "src\\app\\dunia-brambang\\experience.tsx",
+      "Files": 1,
+      "Bytes": 87328,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\UIUX BARU",
+      "Files": 10,
+      "Bytes": 13585154,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\media",
+      "Files": 2,
+      "Bytes": 11116324,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\video_landing_page.mp4",
+      "Files": 1,
+      "Bytes": 10354895,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\file.svg",
+      "Files": 1,
+      "Bytes": 391,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\globe.svg",
+      "Files": 1,
+      "Bytes": 1035,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\next.svg",
+      "Files": 1,
+      "Bytes": 1375,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\vercel.svg",
+      "Files": 1,
+      "Bytes": 128,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    },
+    {
+      "Path": "public\\window.svg",
+      "Files": 1,
+      "Bytes": 385,
+      "Mode": "Recycle Bin; nested generated output: permanent"
+    }
+  ],
+  "Actions": [
+    {
+      "Path": ".next",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "remotion-video\\node_modules",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "remotion-video\\build",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "remotion-video\\out",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "scratch\\price-evaluation-deps",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "tsconfig.tsbuildinfo",
+      "Action": "Removed permanently (regenerable)"
+    },
+    {
+      "Path": "remotion-video",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "scratch",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "ml",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\api",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\architecture",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\design",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\product",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\database\\archive",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "docs\\database\\simantri_schema_v4.sql",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "PRD.md",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "PROGRESS_REPORT.md",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "QUERY_GUIDELINES.md",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "src\\SIMANTRI_Market_Insight_Scrapper_Implementation.md",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "src\\components\\landing\\PlatformVideoDemo.tsx",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "src\\components\\ui\\TiltCard.tsx",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "src\\app\\dunia-brambang\\experience.tsx",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\UIUX BARU",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\media",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\video_landing_page.mp4",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\file.svg",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\globe.svg",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\next.svg",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\vercel.svg",
+      "Action": "Moved to Recycle Bin"
+    },
+    {
+      "Path": "public\\window.svg",
+      "Action": "Moved to Recycle Bin"
+    }
+  ]
+}

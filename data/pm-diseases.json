@@ -1,0 +1,72 @@
+[
+  {
+    "doc_id": "PM-DISEASE-MOLER-001",
+    "title": "Moler / layu Fusarium",
+    "summary": "Perhatikan daun menguning dan terpelintir bersama kerusakan akar atau pangkal umbi, bukan hanya bentuk daun.",
+    "disease": {
+      "scientific_name": "Fusarium oxysporum",
+      "aliases": ["moler", "ngoler", "layu fusarium"],
+      "parts": ["Daun", "Akar & umbi"],
+      "symptoms": ["Daun menguning, terpelintir, lalu layu.", "Akar rusak sehingga tanaman lebih mudah tercabut.", "Pembusukan bermula dari dasar umbi; pertumbuhan cendawan putih dapat terlihat di pangkal."],
+      "prevention": ["Gunakan bahan tanam sehat dan hindari melukai umbi.", "Jaga drainase agar tanaman tidak tergenang.", "Lakukan pergiliran dengan tanaman bukan inang."],
+      "first_steps": ["Periksa akar dan pangkal umbi pada tanaman bergejala.", "Singkirkan tanaman sakit dari pertanaman dan jangan gunakan umbinya sebagai benih.", "Minta pendampingan POPT atau penyuluh untuk memastikan penyebab dan tindakan lanjutan."],
+      "confused_with": "Daun terpelintir saja tidak membuktikan moler. Amati akar serta dasar umbi dan bandingkan dengan gejala antraknosa.",
+      "sources": [{"title": "Pengendalian penyakit layu Fusarium pada tanaman bawang merah", "publisher": "Dinas Pertanian, Ketahanan Pangan dan Perikanan Kabupaten Buleleng", "year": "2020", "url": "https://distankan.bulelengkab.go.id/informasi/detail/artikel/pengendalian-penyakit-layu-fusarium-pada-tanaman-bawang-merah-25"}],
+      "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=29", "label": "Gambar 12 · halaman tercetak 19 (PDF 29)", "credit": "Soetiarso, dalam Udiarto, Setiawati & Suryaningsih, Balitsa (2005). Izin penggunaan ulang belum dikonfirmasi."}
+    }
+  },
+  {
+    "doc_id": "PM-DISEASE-BERCAK-UNGU-001",
+    "title": "Bercak ungu / trotol",
+    "summary": "Bercak pada daun berkembang menjadi keunguan dengan pola menyerupai cincin. Ujung daun dapat mengering dan patah.",
+    "disease": {
+      "scientific_name": "Alternaria porri",
+      "aliases": ["bercak ungu", "trotol", "purple blotch"],
+      "parts": ["Daun"],
+      "symptoms": ["Bercak awal putih atau kelabu dan tampak agak cekung.", "Bercak membentuk cincin keunguan dengan daerah kekuningan di sekelilingnya.", "Bagian daun di atas bercak dapat mengering dan patah."],
+      "prevention": ["Pilih benih sehat, tidak keropos dan tidak terluka.", "Perbaiki drainase serta lakukan pergiliran tanaman bukan inang.", "Jaga kebersihan pertanaman dari sisa tanaman sakit."],
+      "first_steps": ["Amati perubahan warna dan pola bercak, bukan warna daun secara keseluruhan saja.", "Pisahkan bahan tanaman sakit dari bahan tanam sehat.", "Bila serangan bertambah, konsultasikan pengendalian kepada POPT atau penyuluh; penggunaan pestisida harus sesuai label yang berlaku."],
+      "confused_with": "Antraknosa juga dapat menimbulkan bercak putih. Cincin keunguan merupakan petunjuk pembanding, bukan kepastian diagnosis.",
+      "sources": [
+        {"title": "Penyakit bercak ungu pada tanaman bawang merah dan pengendaliannya", "publisher": "Dinas Pertanian, Ketahanan Pangan dan Perikanan Kabupaten Buleleng", "year": "2020", "url": "https://distankan.bulelengkab.go.id/informasi/detail/artikel/penyakit-bercak-ungu-pada-tanaman-bawang-merah-dan-pengendaliannya-27"},
+        {"title": "Budidaya bawang merah · bagian penyakit penting", "publisher": "BRMP Banten, Kementerian Pertanian", "year": "tahun dokumen tidak tercantum pada rujukan yang ditinjau", "url": "https://banten.brmp.pertanian.go.id/storage/assets/uploads/file/GeY2HQf382EJXVJsYRiE9ZwRfFwnHSw5fL8twqWy.pdf#page=5"}
+      ],
+      "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=25", "label": "Gambar 9 · halaman tercetak 15 (PDF 25)", "credit": "Jacobsen/Shurleff, sebagaimana kredit dalam buku Balitsa (2005). Izin penggunaan ulang belum dikonfirmasi."}
+    }
+  },
+  {
+    "doc_id": "PM-DISEASE-ANTRAKNOSA-001",
+    "title": "Antraknosa / otomatis",
+    "summary": "Kenali bercak putih yang membesar pada daun. Pada perkembangannya dapat terlihat massa spora merah muda hingga gelap.",
+    "disease": {
+      "scientific_name": "Colletotrichum gloeosporioides",
+      "aliases": ["antraknosa", "otomatis", "anthracnose"],
+      "parts": ["Daun"],
+      "symptoms": ["Bercak putih kecil pada daun dapat membesar dan tampak cekung.", "Pada bercak dapat terbentuk massa spora merah muda, lalu menggelap.", "Daun yang rusak dapat patah atau rebah."],
+      "prevention": ["Gunakan bahan tanam sehat dan sanitasi sisa tanaman sakit.", "Atur jarak tanam dan drainase untuk mengurangi kelembapan berlebihan.", "Lakukan pergiliran tanaman dan pemupukan berimbang."],
+      "first_steps": ["Amati perkembangan bercak dan kondisi pertanaman setelah hujan.", "Singkirkan bagian tanaman sakit sesuai arahan petugas setempat.", "Bawa catatan gejala kepada POPT atau penyuluh sebelum menentukan pengendalian lanjutan."],
+      "confused_with": "Jangan menyamakan semua bercak putih dengan antraknosa. Bercak ungu dan gangguan lain memerlukan pemeriksaan pembanding.",
+      "sources": [
+        {"title": "Budidaya bawang merah · antraknosa", "publisher": "BRMP Banten, Kementerian Pertanian", "year": "tahun dokumen tidak tercantum pada rujukan yang ditinjau", "url": "https://banten.brmp.pertanian.go.id/storage/assets/uploads/file/GeY2HQf382EJXVJsYRiE9ZwRfFwnHSw5fL8twqWy.pdf#page=6"},
+        {"title": "Pengamatan hama dan penyakit pada bawang merah di Subak Anyar Penglatan", "publisher": "Dinas Pertanian, Ketahanan Pangan dan Perikanan Kabupaten Buleleng", "year": "2019", "url": "https://distankan.bulelengkab.go.id/informasi/detail/berita/pengamatan-hama-dan-penyakit-pada-bawang-merah-di-subak-anyar-penglatan-39"}
+      ],
+      "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=26", "label": "Gambar 10 · halaman tercetak 16 (PDF 26)", "credit": "Suhardi, dalam Udiarto, Setiawati & Suryaningsih, Balitsa (2005). Izin penggunaan ulang belum dikonfirmasi."}
+    }
+  },
+  {
+    "doc_id": "PM-DISEASE-EMBUN-BULU-001",
+    "title": "Embun bulu / tepung palsu",
+    "summary": "Penyakit daun yang perlu dicermati pada kondisi lembap. Lapisan menyerupai bulu pada daun merupakan petunjuk pengamatan.",
+    "disease": {
+      "scientific_name": "Peronospora destructor (oomycete)",
+      "aliases": ["embun bulu", "tepung palsu", "downy mildew"],
+      "parts": ["Daun"],
+      "symptoms": ["Daun tampak lebih pucat, lalu dapat menguning dan mengering.", "Pada kondisi lembap dapat muncul lapisan bulu keabu-abuan hingga keunguan.", "Kerusakan daun dapat meluas pada kondisi yang mendukung penyakit."],
+      "prevention": ["Gunakan bahan tanam sehat dan kurangi sumber infeksi dari sisa tanaman sakit.", "Jaga sirkulasi udara pertanaman serta drainase lahan.", "Pantau daun saat kondisi lembap."],
+      "first_steps": ["Periksa permukaan daun dan bandingkan dengan foto rujukan.", "Catat perubahan gejala dan mintakan pemeriksaan POPT atau penyuluh.", "Hindari menetapkan jenis penyakit atau memilih pestisida hanya dari warna lapisan pada daun."],
+      "confused_with": "Embun bulu tidak sama dengan bercak ungu. Warna keunguan saja tidak cukup untuk membedakan keduanya.",
+      "sources": [{"title": "Pengenalan hama dan penyakit pada tanaman bawang merah dan pengendaliannya · embun bulu", "publisher": "Udiarto, Setiawati & Suryaningsih, Balai Penelitian Tanaman Sayuran", "year": "2005", "url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=27"}],
+      "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=28", "label": "Gambar 11 · halaman tercetak 18 (PDF 28)", "credit": "Sherf, dalam Udiarto, Setiawati & Suryaningsih, Balitsa (2005). Izin penggunaan ulang belum dikonfirmasi."}
+    }
+  }
+]

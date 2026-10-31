@@ -1,0 +1,283 @@
+import type { Metadata } from 'next'
+import { ThemeSwitcher } from '@/components/ui/ThemeProvider'
+import { LanguageSwitcher } from '@/components/ui/LanguageProvider'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowLeft, Lock, Eye, Database, Trash2, Mail, ArrowRight } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Kebijakan Privasi (Privacy Policy) | SIMANTRI',
+  description:
+    'Kebijakan Privasi SIMANTRI | Komitmen kami dalam melindungi data pribadi petani, administrator, dan pengguna ekosistem pertanian bawang merah Nganjuk.',
+}
+
+export default function PrivacyPage() {
+  return (
+    <div lang="id" className="min-h-screen bg-[#F6ECDF] dark:bg-[var(--theme-canvas)] text-[#241812] dark:text-[var(--theme-ink)] flex flex-col selection:bg-[#C4487A]/20 dark:selection:bg-[var(--theme-rose-soft)] selection:text-[#4A1F2B] dark:selection:text-[var(--theme-rose)]">
+      {/* TOP HEADER */}
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#F6ECDF]/90 dark:bg-[var(--theme-canvas)]/90 border-b border-[#241812]/10 dark:border-[var(--theme-line)] transition-all">
+        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-8">
+          <Link
+            href="/"
+            className="group flex items-center gap-3 transition-transform hover:scale-105 active:scale-95"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white dark:bg-[var(--theme-surface)] p-1 shadow-sm border border-[#241812]/10 dark:border-[var(--theme-line)] flex items-center justify-center">
+              <Image
+                src="/logo_simantri.png"
+                alt="Logo SIMANTRI"
+                width={36}
+                height={36}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
+            <div className="hidden sm:block">
+              <span className="block font-serif text-lg font-bold leading-none tracking-tight">
+                SIMAN<em className="text-[#A6304F] dark:text-[var(--theme-rose)]">TRI</em>
+              </span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#6b5b52] dark:text-[var(--theme-body)]">
+                Kebijakan Privasi
+              </span>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher compact />
+            <ThemeSwitcher />
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-full border border-[#241812]/15 dark:border-[var(--theme-line)] bg-white/70 dark:bg-[var(--theme-surface)]/70 px-4 py-2 text-xs font-semibold text-[#241812] dark:text-[var(--theme-ink)] backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-[var(--theme-surface)] hover:border-[#A6304F]/40 dark:hover:border-[var(--theme-rose)]/40 hover:text-[#A6304F] dark:hover:text-[var(--theme-rose)] shadow-sm"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Kembali ke Beranda</span>
+              <span className="sr-only sm:hidden">Beranda</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* SUB-NAVIGATION TABS */}
+      <nav className="bg-[#EDE3D3] dark:bg-[var(--theme-raised)] border-b border-[#241812]/10 dark:border-[var(--theme-line)] px-4 sm:px-8 py-3">
+        <div className="mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-medium">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <Link
+              href="/privacy"
+              className="rounded-full bg-[#A6304F] text-white px-4 py-1.5 shadow-sm font-semibold whitespace-nowrap"
+            >
+              Kebijakan Privasi
+            </Link>
+            <Link
+              href="/terms"
+              className="rounded-full bg-white/60 dark:bg-[var(--theme-surface)]/60 text-[#54433A] dark:text-[var(--theme-body)] hover:bg-white dark:hover:bg-[var(--theme-surface)] hover:text-[#241812] dark:hover:text-[var(--theme-ink)] px-4 py-1.5 transition-all whitespace-nowrap"
+            >
+              Syarat & Ketentuan
+            </Link>
+            <Link
+              href="/data-deletion"
+              className="rounded-full bg-white/60 dark:bg-[var(--theme-surface)]/60 text-[#54433A] dark:text-[var(--theme-body)] hover:bg-white dark:hover:bg-[var(--theme-surface)] hover:text-[#241812] dark:hover:text-[var(--theme-ink)] px-4 py-1.5 transition-all whitespace-nowrap"
+            >
+              Penghapusan Data
+            </Link>
+          </div>
+          <span className="text-[11px] font-mono text-[#6b5b52] dark:text-[var(--theme-body)]">
+            Terakhir diperbarui: 25 Agustus 2026
+          </span>
+        </div>
+      </nav>
+
+      {/* MAIN CONTENT */}
+      <main className="flex-1 px-4 sm:px-8 py-10 sm:py-16">
+        <div className="mx-auto max-w-4xl">
+          {/* HERO BANNER */}
+          <div className="mb-10 sm:mb-14 rounded-3xl bg-gradient-to-br from-[#FFFDF8] dark:from-[var(--theme-surface)] via-white dark:via-[var(--theme-surface)] to-[#FAF0E4] dark:to-[var(--theme-raised)] p-6 sm:p-10 border border-[#241812]/10 dark:border-[var(--theme-line)] shadow-[0_20px_45px_-20px_rgba(36,24,18,0.15)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#A6304F]/10 dark:bg-[var(--theme-rose-soft)] rounded-full blur-3xl pointer-events-none" />
+            <h1 className="font-serif text-2xl sm:text-4xl font-bold text-[#241812] dark:text-[var(--theme-ink)] tracking-tight leading-tight">
+              Kebijakan Privasi SIMANTRI
+            </h1>
+            <p className="mt-3 text-sm sm:text-base text-[#6b5b52] dark:text-[var(--theme-body)] leading-relaxed max-w-2xl">
+              SIMANTRI (Sistem Informasi Pertanian Bawang Merah Terintegrasi) berkomitmen melindungi privasi data pribadi petani, administrator, dan seluruh pengguna platform. Dokumen ini menjelaskan bagaimana data Anda dikumpulkan, digunakan, dan dilindungi.
+            </p>
+          </div>
+
+          {/* POLICY SECTIONS */}
+          <div className="space-y-8 text-[#3D2E26] dark:text-[var(--theme-ink)] text-sm sm:text-base leading-relaxed">
+            {/* Section 1 */}
+            <section className="rounded-2xl bg-[#FFFDF8]/90 dark:bg-[var(--theme-surface)]/90 border border-[#241812]/10 dark:border-[var(--theme-line)] p-6 sm:p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-[#A6304F]/10 dark:bg-[var(--theme-rose-soft)] text-[#A6304F] dark:text-[var(--theme-rose)] shrink-0 mt-1">
+                  <Eye className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#241812] dark:text-[var(--theme-ink)] mb-3">
+                    1. Data yang Kami Kumpulkan
+                  </h2>
+                  <p className="mb-4">
+                    Kami mengumpulkan informasi yang Anda berikan secara langsung saat menggunakan platform SIMANTRI, meliputi:
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside text-[#54433A] dark:text-[var(--theme-body)]">
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Informasi Akun:</strong> Nama lengkap, alamat email, lokasi pada profil, dan peran pengguna (Petani atau Administrator).
+                    </li>
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Data Lahan & Geografis:</strong> Lokasi kecamatan/desa yang diberikan pengguna melalui profil.
+                    </li>
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Foto Referensi:</strong> Foto penyakit disajikan sebagai referensi edukasi; tidak ada pemrosesan unggahan untuk diagnosis otomatis.
+                    </li>
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Data Interaksi:</strong> Pertanyaan, jawaban, dan feedback pada layanan AI Assistant RAG sesuai fitur yang digunakan.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 2 */}
+            <section className="rounded-2xl bg-[#FFFDF8]/90 dark:bg-[var(--theme-surface)]/90 border border-[#241812]/10 dark:border-[var(--theme-line)] p-6 sm:p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-[#E6A15C]/20 dark:bg-[var(--theme-amber-soft)] text-[#8C531B] dark:text-[var(--theme-amber)] shrink-0 mt-1">
+                  <Database className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#241812] dark:text-[var(--theme-ink)] mb-3">
+                    2. Tujuan Penggunaan Data
+                  </h2>
+                  <p className="mb-3">
+                    Data yang dikumpulkan digunakan semata-mata untuk meningkatkan produktivitas dan akurasi layanan bagi petani bawang merah:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                    <div className="p-3.5 rounded-xl bg-[#FAF0E4] dark:bg-[var(--theme-raised)] border border-[#E5DFD6] dark:border-[var(--theme-line)]">
+                      <h3 className="font-semibold text-xs text-[#241812] dark:text-[var(--theme-ink)] uppercase tracking-wider mb-1">Informasi Penyakit</h3>
+                      <p className="text-xs text-[#54433A] dark:text-[var(--theme-body)]">Menyediakan informasi gejala, foto referensi, dan materi penanganan untuk dipelajari secara mandiri.</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#FAF0E4] dark:bg-[var(--theme-raised)] border border-[#E5DFD6] dark:border-[var(--theme-line)]">
+                      <h3 className="font-semibold text-xs text-[#241812] dark:text-[var(--theme-ink)] uppercase tracking-wider mb-1">Market Insight PIHPS</h3>
+                      <p className="text-xs text-[#54433A] dark:text-[var(--theme-body)]">Menyajikan harga aktual dan riwayat harga PIHPS sesuai ketersediaan data.</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#FAF0E4] dark:bg-[var(--theme-raised)] border border-[#E5DFD6] dark:border-[var(--theme-line)]">
+                      <h3 className="font-semibold text-xs text-[#241812] dark:text-[var(--theme-ink)] uppercase tracking-wider mb-1">Asisten Pengetahuan</h3>
+                      <p className="text-xs text-[#54433A] dark:text-[var(--theme-body)]">Membantu pengguna memahami informasi budidaya melalui AI Assistant RAG dan sumber pengetahuan.</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#FAF0E4] dark:bg-[var(--theme-raised)] border border-[#E5DFD6] dark:border-[var(--theme-line)]">
+                      <h3 className="font-semibold text-xs text-[#241812] dark:text-[var(--theme-ink)] uppercase tracking-wider mb-1">Arsip Pengetahuan Lokal</h3>
+                      <p className="text-xs text-[#54433A] dark:text-[var(--theme-body)]">Mendokumentasikan kearifan lokal tani Nganjuk ke pameran edukasi digital Dunia Brambang.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3 */}
+            <section className="rounded-2xl bg-[#FFFDF8]/90 dark:bg-[var(--theme-surface)]/90 border border-[#241812]/10 dark:border-[var(--theme-line)] p-6 sm:p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-[#56724A]/20 dark:bg-[var(--theme-green-soft)] text-[#36512C] dark:text-[var(--theme-green)] shrink-0 mt-1">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#241812] dark:text-[var(--theme-ink)] mb-3">
+                    3. Keamanan & Penyimpanan Data
+                  </h2>
+                  <p className="mb-3">
+                    Keamanan informasi Anda adalah prioritas kami. SIMANTRI menerapkan standar keamanan industri modern:
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside text-[#54433A] dark:text-[var(--theme-body)]">
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Enkripsi Data:</strong> Komunikasi data dilindungi protokol HTTPS/TLS dan database terenkripsi dengan teknologi Supabase.
+                    </li>
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Kontrol Akses Berbasis Peran (RBAC):</strong> Hak akses data dibatasi secara ketat berdasarkan peran terdaftar dengan verifikasi Row-Level Security (RLS).
+                    </li>
+                    <li>
+                      <strong className="text-[#241812] dark:text-[var(--theme-ink)]">Tidak Ada Penjualan Data:</strong> SIMANTRI tidak pernah dan tidak akan pernah menjual atau menyewakan data pribadi pengguna kepada pihak ketiga untuk kepentingan komersial.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 4 */}
+            <section className="rounded-2xl bg-[#FFFDF8]/90 dark:bg-[var(--theme-surface)]/90 border border-[#241812]/10 dark:border-[var(--theme-line)] p-6 sm:p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-[#A6304F]/10 dark:bg-[var(--theme-rose-soft)] text-[#A6304F] dark:text-[var(--theme-rose)] shrink-0 mt-1">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#241812] dark:text-[var(--theme-ink)] mb-3">
+                    4. Hak Pengguna & Penghapusan Data
+                  </h2>
+                  <p className="mb-3">
+                    Sebagai pengguna SIMANTRI, Anda memiliki kendali penuh atas data Anda, termasuk hak untuk:
+                  </p>
+                  <ul className="space-y-2 list-disc list-inside text-[#54433A] dark:text-[var(--theme-body)] mb-4">
+                    <li>Mengakses dan memperbarui informasi profil Anda kapan saja melalui dashboard.</li>
+                    <li>Mengajukan permohonan penghapusan akun dan seluruh riwayat data terkait (Right to be Forgotten).</li>
+                    <li>Mencabut izin akses kamera atau lokasi pada peramban/perangkat Anda.</li>
+                  </ul>
+                  <div className="mt-4 p-4 rounded-xl bg-[#FAF0E4] dark:bg-[var(--theme-raised)] border border-[#E5DFD6] dark:border-[var(--theme-line)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-xs text-[#241812] dark:text-[var(--theme-ink)]">Ingin menghapus data akun Anda?</p>
+                      <p className="text-xs text-[#6b5b52] dark:text-[var(--theme-body)]">Pelajari langkah dan formulir penghapusan data mandiri.</p>
+                    </div>
+                    <Link
+                      href="/data-deletion"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#A6304F] px-4 py-2 text-xs font-semibold text-white hover:bg-[#7E2340] transition-colors shrink-0"
+                    >
+                      Buka Panduan Penghapusan Data
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 5 */}
+            <section className="rounded-2xl bg-[#FFFDF8]/90 dark:bg-[var(--theme-surface)]/90 border border-[#241812]/10 dark:border-[var(--theme-line)] p-6 sm:p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 rounded-xl bg-[#241812]/10 dark:bg-[var(--theme-raised)] text-[#241812] dark:text-[var(--theme-ink)] shrink-0 mt-1">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#241812] dark:text-[var(--theme-ink)] mb-3">
+                    5. Kontak & Pengelola Layanan
+                  </h2>
+                  <p className="mb-3 text-[#54433A] dark:text-[var(--theme-body)]">
+                    Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini atau pengelolaan data di SIMANTRI, silakan hubungi tim kami melalui:
+                  </p>
+                  <div className="p-4 rounded-xl bg-white dark:bg-[var(--theme-surface)] border border-[#E5DFD6] dark:border-[var(--theme-line)] space-y-1.5 text-xs text-[#54433A] dark:text-[var(--theme-body)]">
+                    <p><strong className="text-[#241812] dark:text-[var(--theme-ink)]">Kontak:</strong> <a href="mailto:azkabanaran65@gmail.com" className="text-[#A6304F] dark:text-[var(--theme-rose)] hover:underline font-medium">azkabanaran65@gmail.com</a> (Admin SIMANTRI)</p>
+                    <p><strong className="text-[#241812] dark:text-[var(--theme-ink)]">Instansi:</strong> Tim SIMANTRI & Kolaborasi Pertanian Bawang Merah Kabupaten Nganjuk</p>
+                    <p><strong className="text-[#241812] dark:text-[var(--theme-ink)]">Lokasi:</strong> Kabupaten Nganjuk, Jawa Timur, Indonesia</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="bg-[#1b120d] px-4 sm:px-8 py-10 text-[#F6ECDF]/70 border-t border-white/5">
+        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-serif font-bold text-[#F6ECDF]">SIMANTRI</span>
+            <span>&copy; {new Date().getFullYear()} Bawang Merah Nganjuk</span>
+          </div>
+          <div className="flex flex-wrap gap-4 text-[#F6ECDF]/80">
+            <Link href="/privacy" className="text-[#E6A15C] font-semibold underline underline-offset-4">
+              Kebijakan Privasi
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Syarat & Ketentuan
+            </Link>
+            <Link href="/data-deletion" className="hover:text-white transition-colors">
+              Penghapusan Data
+            </Link>
+            <Link href="/" className="hover:text-white transition-colors">
+              Beranda
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
