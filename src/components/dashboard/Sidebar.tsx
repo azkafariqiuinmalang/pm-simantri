@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Bot,
   ShoppingBasket,
+  ClipboardList,
   TrendingUp,
   BookOpen,
   UserCog,
@@ -58,7 +59,8 @@ export default function Sidebar({ profile, isOpen, onClose }: SidebarProps) {
         { label: 'AI Asisten (SIMA)', href: '/dashboard/chat', icon: Bot },
         { label: 'Informasi Penyakit', href: '/dashboard/penyakit', icon: BookOpen },
         { label: 'Market Insight PIHPS', href: '/dashboard/harga', icon: TrendingUp },
-        { label: 'Harvest Listing', href: '/dashboard/panen', icon: ShoppingBasket },
+        { label: 'Marketplace Panen', href: '/dashboard/panen', icon: ShoppingBasket },
+        { label: 'Kelola Panen Saya', href: '/dashboard/panen/saya', icon: ClipboardList },
       ],
     },
     {
@@ -69,6 +71,7 @@ export default function Sidebar({ profile, isOpen, onClose }: SidebarProps) {
           ? [
               { label: 'Kelola Informasi Penyakit', href: '/admin/penyakit', icon: BookOpen },
               { label: 'Input Harga Pasar', href: '/admin/market/input', icon: BadgeDollarSign },
+              { label: 'Moderasi Panen', href: '/admin/panen', icon: ClipboardList },
             ]
           : []),
       ],
@@ -103,7 +106,7 @@ export default function Sidebar({ profile, isOpen, onClose }: SidebarProps) {
   }
 
   const isItemActive = (href: string) =>
-    href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href)
+    href === '/dashboard' || href === '/dashboard/panen' ? pathname === href : pathname.startsWith(href)
 
   const content = (
     <div className="flex h-full w-[270px] max-w-[85vw] flex-col justify-between bg-white dark:bg-[var(--theme-surface)] text-slate-800 dark:text-[var(--theme-ink)] shadow-[0_1px_8px_rgba(20,40,28,0.06)] border-r border-slate-100 dark:border-[var(--theme-line)] font-jakarta">

@@ -11,7 +11,7 @@ export default function AdminPage() {
     { title: 'Data harga PIHPS', href: '/admin/market/input', icon: Database, description: 'Kelola sinkronisasi dan periksa sumber serta tanggal catatan harga.' },
     { title: 'Informasi penyakit', href: '/admin/penyakit', icon: BookOpen, description: 'Sunting gejala, pencegahan, tindakan awal, dan status publikasi empat materi katalog berujukan resmi.' },
     { title: 'AI Assistant RAG', href: '/dashboard/chat', icon: Bot, description: 'Tinjau jawaban SIMA dan rujukan knowledge base yang digunakan.' },
-    { title: 'Harvest Listing', href: '/dashboard/panen', icon: ShoppingBasket, description: 'Pengelolaan dan moderasi listing belum diimplementasikan pada tahap perapian ini.' },
+    { title: 'Moderasi Panen', href: '/admin/panen', icon: ShoppingBasket, description: 'Periksa pengajuan, foto, stok dan kontak; publikasikan penawaran atau kirim catatan perbaikan.' },
   ]
   return <div className="sim-page mx-auto max-w-7xl space-y-6">
     <PageHeading title={t('Portal Admin SIMANTRI')} description={t('Pengelolaan prototype PM dengan peran Petani dan Admin.')} />

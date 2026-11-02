@@ -182,7 +182,7 @@ test('comparison dates are explicitly applied from form data instead of showing 
       useCallback: callback => callback, useMemo: callback => callback, useEffect: () => {}, useRef: value => ({ current: value }),
     },
     '@/components/ui/LanguageProvider': { useLanguage: () => ({ t: source => source }) },
-    '@/components/dashboard/DashboardUI': {}, '@/lib/market/pihps': pihps,
+    '@/components/dashboard/DashboardUI': {}, '@/components/dashboard/PriceTypeCards': {}, '@/lib/market/pihps': pihps,
   })
   function find(node, predicate) {
     if (!node || typeof node !== 'object') return null
@@ -283,7 +283,7 @@ test('switching categories remounts price state, preventing old series under a n
   const changes = []
   const { default: MarketPage } = load('src/app/dashboard/harga/page.tsx', {
     react: { ...require('react'), useState: initial => [initial, value => changes.push(value)] },
-    '@/components/ui/LanguageProvider': {}, '@/components/dashboard/DashboardUI': {}, '@/lib/market/pihps': pihps,
+    '@/components/ui/LanguageProvider': {}, '@/components/dashboard/DashboardUI': {}, '@/components/dashboard/PriceTypeCards': {}, '@/lib/market/pihps': pihps,
   })
   const shell = MarketPage()
   assert.equal(shell.key, '4')

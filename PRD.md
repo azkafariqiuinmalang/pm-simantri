@@ -4,8 +4,8 @@
 | --- | --- |
 | Nama produk | SIMANTRI — Sistem Informasi Pertanian Bawang Merah Terintegrasi |
 | Konteks | Proyek mata kuliah Project Management, terpisah dari versi lomba |
-| Versi dokumen | 1.0 |
-| Tanggal | 26 Oktober 2026, Asia/Jakarta |
+| Versi dokumen | 1.1 |
+| Tanggal | 2 November 2026, Asia/Jakarta |
 | Status | Baseline kebutuhan untuk ditinjau tim; bukan pernyataan seluruh fitur telah selesai |
 | Outcome | Prototype aplikasi web yang berfungsi dan diuji secara terbatas, belum disebarluaskan untuk penggunaan umum |
 | Pemilik produk | Peran Product Owner/Project Manager; tidak menggunakan identitas individu |
@@ -39,7 +39,7 @@ Prototype adalah software yang dapat dijalankan, bukan sekadar desain antarmuka.
 | OBJ-01 | Menyediakan referensi awal penyakit bawang merah. | Pengguna menemukan materi berdasarkan nama/gejala, membaca ciri pembeda, dan membuka referensi foto serta sumber. |
 | OBJ-02 | Membantu akses pengetahuan budidaya melalui SIMA. | Pertanyaan uji menghasilkan jawaban dengan rujukan yang benar ketika dokumen ditemukan; ketiadaan rujukan dan gangguan layanan dinyatakan jujur. |
 | OBJ-03 | Menyediakan informasi harga yang dapat ditelusuri. | Jenis harga, provinsi, tanggal publikasi, satuan dan sumber sesuai data tersimpan; tidak ada harga pengganti buatan. |
-| OBJ-04 | Mendemonstrasikan alur listing panen. | Pemilik dapat membuat listing, Admin memoderasi, dan pengguna lain melihat listing yang dipublikasikan serta mengakses kontak penjual. **Belum tercapai saat dokumen dibuat.** |
+| OBJ-04 | Mendemonstrasikan alur listing panen. | Pemilik dapat membuat listing, Admin memoderasi, dan pengguna lain melihat listing yang dipublikasikan serta mengakses kontak penjual. **Alur dasar diimplementasikan dan diuji pada 2 November 2026.** |
 | OBJ-05 | Memastikan pembatasan peran dan kepemilikan data. | Pengguna tanpa hak tidak dapat mengubah konten/harga/listing orang lain atau membaca percakapan orang lain. |
 | OBJ-06 | Menguji manfaat dan efisiensi. | Skenario uji mencatat waktu penyelesaian, keberhasilan tugas, kesalahan, dan umpan balik; hasil dibandingkan dengan cara pencarian/input manual yang sama. |
 
@@ -185,12 +185,12 @@ Empat seri tidak dicampur. Selisih antarjenis tidak otomatis berarti margin keun
 
 **Tujuan:** marketplace informasi hasil panen dan penghubung kontak, bukan mesin transaksi.
 
-**Status saat ini:** tabel dasar serta kebijakan kepemilikan telah disiapkan pada skema PM. Halaman `/dashboard/panen` masih placeholder. Form, katalog, foto, moderasi serta alur kontak **belum menjadi fitur yang berjalan**.
+**Status 2 November 2026:** Marketplace Panen, Kelola Panen Saya, detail, formulir, unggah foto privat dan moderasi Admin telah diimplementasikan. Simpan draf, unggah foto, pengajuan dan publikasi telah diuji melalui browser. Batas: tiga foto JPG/PNG/WebP, 3 MB per foto. Pembayaran/pengiriman dan jaminan mutu fisik tidak termasuk. Lihat [catatan implementasi](docs/HARVEST_LISTING.md) untuk bukti dan batas verifikasi.
 
 | ID | Prioritas | Kebutuhan target | Kriteria penerimaan |
 | --- | --- | --- | --- |
 | HLV-01 | P0 | Petani membuat dan menyunting listing sendiri. | Isian wajib: judul, lokasi, jumlah kg, harga per kg dan kontak yang sengaja dipublikasikan. Deskripsi, varietas dan tanggal panen dapat dilengkapi. Jumlah/harga harus positif. |
-| HLV-02 | P0 | Listing memiliki foto panen. | Unggah memvalidasi format/ukuran, memiliki batas akses berdasarkan pemilik, menangani gagal unggah, dan tidak membocorkan aset privat. Batas ukuran/jumlah final mengikuti keputusan terbuka DEC-03. |
+| HLV-02 | P0 | Listing memiliki foto panen. | Unggah memvalidasi format/ukuran, memiliki batas akses berdasarkan pemilik, menangani gagal unggah, dan tidak membocorkan aset privat. Batas final: tiga foto JPG/PNG/WebP, maksimal 3 MB per foto; server memeriksa MIME dan signature berkas. |
 | HLV-03 | P0 | Pemilik menyimpan draft atau mengajukan publikasi. | Draft/pending tidak muncul sebagai penawaran publik kepada pengguna lain; pengguna tidak dapat menetapkan sendiri status published. |
 | HLV-04 | P0 | Admin meninjau, mempublikasikan atau menyembunyikan listing. | Hanya Admin mengubah keputusan moderasi; hasilnya terlihat oleh pemilik dan katalog sesuai status. |
 | HLV-05 | P0 | Pengguna melihat, mencari dan memfilter listing yang boleh diakses. | Hasil pencarian berisi listing published untuk pengguna lain; judul/lokasi dan status ketersediaan konsisten dengan data. Katalog kosong tidak diisi penjual fiktif tanpa label. |
@@ -207,7 +207,7 @@ Empat seri tidak dicampur. Selisih antarjenis tidak otomatis berarti margin keun
 | `sold` | Tidak tersedia. | Pemilik dapat mengajukan ulang sebagai pending jika stok berubah; bukan langsung published. |
 | `hidden` | Tidak ditampilkan karena keputusan moderasi. | Pemilik memperbaiki lalu mengajukan pending; Admin meninjau ulang. |
 
-Transisi di atas adalah kebutuhan target yang harus diuji di API dan database. Kebijakan dasar saat ini belum merupakan state machine lengkap dan belum mencatat alasan moderasi. Jangan menganggap seluruh transisi/jejak moderasi sudah tersedia hanya karena nama status ada dalam tabel. Penghapusan permanen bukan alur utama prototype; penutupan listing diprioritaskan melalui status.
+Transisi kini diperiksa di API dan trigger database. Admin menyimpan catatan perbaikan pada moderation_note. Pembaruan memakai updated_at untuk menolak perubahan bersamaan. Menyimpan suntingan mengembalikan penawaran ke draft; pengajuan ulang menjadi pending. Pemilik dapat menghapus draft, hidden, atau sold miliknya; status aktif ditutup melalui alur penarikan/terjual. Catatan moderasi terakhir tersedia, tetapi audit historis lengkap belum dibuat.
 
 ## 7. Alur penggunaan dan alur data
 
@@ -220,7 +220,7 @@ Registrasi atau login → Dashboard
                         ├─ Informasi Penyakit → cari/filter → baca gejala & rujukan
                         ├─ SIMA → pertanyaan → retrieval KB → jawaban & sumber
                         ├─ Market Insight → pilih jenis/tanggal/provinsi → tabel & grafik
-                        └─ Harvest Listing [target] → buat/cari listing → kontak penjual
+                        └─ Harvest Listing → buat/cari listing → kontak penjual
 ```
 
 ### 7.2 Admin
@@ -241,7 +241,7 @@ Login → verifikasi peran Admin dari profil database
 | Profil dan autentikasi PM | Dashboard, SIMA, harga, katalog Admin, listing | Tidak mengambil akun/role dari proyek lomba. |
 | `knowledge_entries` | Katalog penyakit dan retrieval SIMA | Terpublikasi tidak berarti tervalidasi ahli; kurasi lama tetap diperlukan. |
 | Pipeline PIHPS | Sinkronisasi Admin dan tampilan Market Insight | Bukan feed harga real-time dalam percakapan SIMA; tidak memiliki forecasting. |
-| `harvest_listings` | Listing pemilik, katalog, moderasi | Tabel dasar tersedia; implementasi aplikasi masih harus dibangun. |
+| `harvest_listings` | Listing pemilik, katalog, moderasi | Katalog, form, foto privat, kepemilikan dan moderasi telah diimplementasikan. |
 | Aset penyakit/panen | Katalog/Harvest Listing | Foto dengan provenance/hak pakai dan Storage aman belum otomatis tersedia. |
 
 ## 8. Data dan aturan kualitas
@@ -282,7 +282,7 @@ Status berikut disusun dari kode serta dokumentasi lokal yang ditinjau pada 26 O
 | Katalog penyakit | Empat materi baru, pencarian/filter, detail panduan, sumber dan editor Admin tersedia. | Galeri foto in-app, validasi agronomi, serta pengelolaan penambahan materi belum lengkap. |
 | SIMA RAG | Retrieval teks/keyword, generasi/fallback, rujukan, pencatatan dan feedback telah diimplementasikan. | Akses generasi anonim, label fallback, kejelasan gagal menyimpan, kualitas KB dan evaluasi jawaban perlu dituntaskan. Model/kuota aktif harus diuji tanpa menganggap daftar kandidat menjamin ketersediaan. |
 | Market Insight | Empat jenis, filter, grafik, sinkronisasi Admin dan retensi sudah tersedia serta memiliki bukti uji terdahulu. | Uji pengguna dan pengujian gangguan sumber perlu dilanjutkan; cakupan/tanggal data harus diperiksa saat dipakai. |
-| Harvest Listing | Skema dasar tersedia; UI hanya placeholder. | Seluruh alur aplikasi listing/foto/pencarian/kontak/moderasi serta validasi transisi status belum selesai. |
+| Harvest Listing | Marketplace, kelola panen sendiri, form/detail, foto privat, moderasi dan kontak tersedia. | Pengujian lapangan pengguna, audit moderasi historis dan uji skala besar belum dilakukan. |
 | Dunia Brambang/landing | Dipertahankan; video lomba dikeluarkan dan diganti ringkasan modul PM. | Tinjau seluruh copy/simulasi lama agar tidak menjanjikan kemampuan yang tidak tersedia. |
 | Pengujian/paket lokal | Pembersihan terakhir mencatat 72 tes lulus dan build verifikasi Webpack berhasil. | Tes tersebut bukan UAT, validasi ahli, audit keamanan menyeluruh, atau jaminan build Turbopack di setiap lingkungan. |
 
@@ -291,7 +291,7 @@ Status berikut disusun dari kode serta dokumentasi lokal yang ditinjau pada 26 O
 | ID | Gap | Prioritas | PIC berbasis peran | Bukti penutupan |
 | --- | --- | --- | --- | --- |
 | G-01 | Foto penyakit belum menjadi galeri berizin di aplikasi. | P0 untuk menyatakan galeri selesai | Business Analyst/UI-UX + Full Stack Developer | Foto, dasar izin, kredit dan pemeriksaan relevansi untuk empat penyakit. |
-| G-02 | Harvest Listing belum diimplementasikan. | P0 | Full Stack Developer + QA/Implementation | Alur pemilik–Admin–pembaca, unggah foto dan uji akses lulus. |
+| G-02 | Harvest Listing telah diimplementasikan; uji pengguna lapangan masih diperlukan. | P0 | Full Stack Developer + QA/Implementation | Alur inti browser serta 17 pemeriksaan RLS lulus; lanjutkan UAT bersama petani. |
 | G-03 | Peninjauan materi lama dan validasi konten belum selesai. | P0 untuk klaim kualitas materi | Data/AI Engineer + Business Analyst | Catatan review yang membedakan ringkasan editorial dengan validasi ahli. |
 | G-04 | Endpoint chat membaca sesi tetapi belum menolak seluruh permintaan generasi tanpa pengguna. | P0 sebelum uji dengan akses lebih luas | Full Stack Developer + Data/AI Engineer | Permintaan anonim tidak dapat memicu generasi/riwayat privat; uji endpoint langsung dan pembatasan penggunaan disiapkan. |
 | G-05 | Fallback AI atau kegagalan pencatatan berpotensi kurang jelas bagi pengguna. | P0 | Data/AI Engineer + Full Stack Developer | Label/status respons serta UI membedakan generasi, ringkasan fallback, tanpa rujukan dan riwayat gagal tersimpan. |
@@ -366,7 +366,7 @@ Cadangan biaya tidak dianggap pengeluaran wajib atau pengganti perencanaan biaya
 **Definition of Done untuk penerimaan akhir prototype:**
 
 1. Kebutuhan P0 yang masuk baseline telah diimplementasikan dan memiliki bukti uji; pengecualian hanya sah jika diterima secara eksplisit dan dicatat sebagai batasan, bukan diubah menjadi klaim selesai.
-2. Alur inti keempat modul dapat didemonstrasikan. Selama Harvest Listing masih placeholder, prototype belum memenuhi keseluruhan target empat modul.
+2. Alur inti keempat modul dapat didemonstrasikan. Harvest Listing kini tersedia; penerimaan akhir tetap memerlukan UAT dan pemenuhan gap modul lainnya.
 3. Tidak ada temuan kritis akses silang, role, kebocoran rahasia, harga buatan sebagai aktual, atau sumber/foto palsu yang belum ditangani.
 4. Keterbatasan konten agronomi, galeri foto, layanan pihak ketiga dan cakupan data terlihat jelas.
 5. Kode/build, dokumentasi pengguna/Admin, hasil tes/UAT dan daftar masalah tersisa diserahkan.
@@ -378,7 +378,7 @@ Cadangan biaya tidak dianggap pengeluaran wajib atau pengganti perencanaan biaya
 | --- | --- | --- |
 | DEC-01 | Tahun/tanggal baseline akhir dan distribusi pekerjaan per milestone. | Ikuti ProjectLibre dan rencana PM yang disetujui; jangan mengarang tanggal pada dokumen produk. |
 | DEC-02 | Foto penyakit yang sah dipakai dan pihak peninjau konten. | Tautan referensi resmi tetap disertai kredit; galeri/validasi ahli tidak diklaim selesai. |
-| DEC-03 | Batas jumlah/ukuran/format foto, bucket dan aturan akses Storage. | Belum ada alur unggah produksi; jangan membuka bucket tanpa desain hak akses dan uji. |
+| DEC-03 | Diputuskan: maksimal tiga foto JPG/PNG/WebP, 3 MB/foto; bucket privat pm-harvest. | Pemilik mengunggah ke draf sendiri; pengguna lain hanya membaca foto listing published. RLS dan trigger diverifikasi. |
 | DEC-04 | Kanal kontak penjual, persetujuan publikasi dan lama penyimpanan kontak/chat/listing. | Tidak otomatis memakai kebijakan 60 hari harga untuk data pribadi. |
 | DEC-05 | Peserta, jumlah sesi, target waktu tugas dan penanggung jawab UAT. | Pengujian terbatas, bukan klaim telah dipakai masyarakat luas. |
 | DEC-06 | Konfigurasi model AI, kuota/rate limit dan indikator fallback. | Hanya layanan yang benar-benar diuji boleh diklaim tersedia; tidak membuat biaya berbayar baru tanpa persetujuan. |

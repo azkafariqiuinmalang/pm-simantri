@@ -45,7 +45,7 @@ export function openSimaAssistant(options?: { prompt?: string; autoSend?: boolea
   }
 }
 
-export default function FloatingAssistant() {
+export default function FloatingAssistant({ quiet = false }: { quiet?: boolean } = {}) {
   const { t, language } = useLanguage()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -209,7 +209,7 @@ export default function FloatingAssistant() {
     <>
       {feedbackNotice && <Toast message={feedbackNotice} onDismiss={() => setFeedbackNotice('')} />}
       {/* FLOATING SIMA MASCOT + SPEECH BUBBLE WIDGET */}
-      {!isOpen && (
+      {!isOpen && !quiet && (
         <div className="fixed bottom-20 lg:bottom-6 right-3 sm:right-6 z-40 flex flex-col items-end pointer-events-auto font-jakarta select-none">
           {/* SPEECH BUBBLE (Above Mascot) */}
           {(

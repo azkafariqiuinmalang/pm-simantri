@@ -89,8 +89,9 @@ export default function RegisterPage() {
         email: cleanEmail,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
             role: role,
             village: village,
           },
@@ -101,6 +102,8 @@ export default function RegisterPage() {
         let msg = error.message
         if (msg.toLowerCase().includes('rate limit')) {
           msg = 'Batas pengiriman email sistem pendaftaran sementara telah tercapai (Supabase Rate Limit). Silakan coba lagi beberapa saat kemudian atau hubungi administrator.'
+        } else if (error.code === 'email_address_not_authorized' || /email address not authorized|error sending confirmation email/i.test(msg)) {
+          msg = 'Email konfirmasi belum dapat dikirim. Hubungi administrator untuk memeriksa layanan pengiriman email, lalu coba daftar kembali.'
         } else if (msg.toLowerCase().includes('already registered')) {
           msg = 'Alamat email ini sudah terdaftar di SIMANTRI. Silakan masuk menggunakan akun Anda.'
         }
@@ -114,7 +117,7 @@ export default function RegisterPage() {
         router.refresh()
       } else {
         setSuccessMessage(
-          'Pendaftaran berhasil! Periksa email untuk konfirmasi akun jika diminta, lalu masuk ke sistem.'
+          'Permintaan pendaftaran diterima. Periksa kotak masuk dan folder spam, lalu buka tautan konfirmasi di browser yang sama. Setelah email terkonfirmasi, Anda dapat masuk. Jika email sudah terdaftar, gunakan akun yang ada.'
         )
         setLoading(false)
       }

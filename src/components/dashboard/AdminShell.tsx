@@ -76,6 +76,7 @@ export default function AdminShell({
   }, [router])
 
   const getPageTitle = () => {
+    if (pathname.includes('/admin/panen')) return 'Moderasi Penawaran Panen'
     if (pathname.includes('/admin/penyakit')) return 'Pengelolaan Informasi Penyakit'
     if (pathname.includes('/market/input')) return 'Input & Sinkronisasi Harga Harian'
     return 'Pusat Operasional & Integritas SIMANTRI'
@@ -83,7 +84,7 @@ export default function AdminShell({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F6F8F6] dark:bg-[var(--theme-canvas)] font-jakarta">
+      <div className="min-h-screen flex items-center justify-center bg-[#F1FAF3] dark:bg-[var(--theme-canvas)] font-jakarta">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-simantri-600 dark:text-[var(--theme-green)]" />
           <p className="text-xs font-semibold text-slate-700 dark:text-[var(--theme-body)]">
@@ -95,7 +96,7 @@ export default function AdminShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8F6] dark:bg-[var(--theme-canvas)] font-jakarta flex overflow-x-clip text-slate-800 dark:text-[var(--theme-ink)]">
+    <div className="min-h-screen bg-[#F1FAF3] dark:bg-[var(--theme-canvas)] font-jakarta flex overflow-x-clip text-slate-800 dark:text-[var(--theme-ink)]">
       {/* Dynamic Role Sidebar */}
       <Sidebar
         profile={profile}
@@ -173,7 +174,7 @@ export default function AdminShell({
           {children}
         </main>
 
-        <FloatingAssistant />
+        <FloatingAssistant quiet={pathname.startsWith('/admin/panen')} />
       </div>
     </div>
   )

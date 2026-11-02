@@ -44,7 +44,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'SIMANTRI | Sistem Informasi Pertanian Bawang Merah Terintegrasi',
   description:
-    'Prototype informasi penyakit, AI Assistant RAG, dan Market Insight PIHPS dengan rencana Harvest Listing. Jelajahi edukasi Dunia Brambang.',
+    'Prototype informasi penyakit, AI Assistant RAG, Market Insight PIHPS, dan Harvest Listing. Jelajahi edukasi Dunia Brambang.',
 }
 
 export default function RootLayout({

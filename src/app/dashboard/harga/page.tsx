@@ -1,13 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { TrendingUp, RefreshCw, Globe2, ExternalLink } from 'lucide-react'
-import { MetricCard, PageHeading, PriceLineChart } from '@/components/dashboard/DashboardUI'
+import { TrendingUp, RefreshCw, Globe2, ExternalLink, CalendarDays, History, Wallet } from 'lucide-react'
+import { PriceLineChart } from '@/components/dashboard/DashboardUI'
+import PriceTypeCards from '@/components/dashboard/PriceTypeCards'
 import { useLanguage } from '@/components/ui/LanguageProvider'
-import { jakartaToday, marketRetentionStart, pihpsPriceTypeInfo, PIHPS_PRICE_TYPES, type PihpsPriceType } from '@/lib/market/pihps'
+import { jakartaToday, marketRetentionStart, pihpsPriceTypeInfo, type PihpsPriceType } from '@/lib/market/pihps'
 
 interface RegionalPrice { id: string; tanggal: string; prov_id: number; provinsi: string; harga: number; updated_at?: string }
-const rupiah = (value: number | null) => value === null ? 'Belum tersedia' : 'Rp ' + value.toLocaleString('id-ID') + '/kg'
+const rupiah = (value: number | null) => value === null ? 'Belum tersedia' : 'Rp ' + Number(value).toLocaleString('id-ID') + '/kg'
 
 export default function MarketInsightPage() {
   const [priceType, setPriceType] = useState<PihpsPriceType>(4)
@@ -99,18 +100,10 @@ function MarketInsightContent({ priceType, onPriceTypeChange }: { priceType: Pih
   const lastSync = regional.map(row => row.updated_at || '').sort().at(-1)
   const maxPrice = prices.length ? Math.max(...prices) : 0
 
-  return <div className="sim-page mx-auto max-w-7xl space-y-6">
-    <PageHeading title={t('Market Insight PIHPS')} description={t('Empat jenis harga bawang merah ukuran sedang, dari produsen hingga konsumen. Bukan prediksi harga.')} icon={TrendingUp}
-      action={<button type="button" onClick={() => { void load() }} disabled={loading} className="sim-button-secondary"><RefreshCw className={'h-4 w-4 ' + (loading ? 'animate-spin' : '')} />{t('Segarkan')}</button>} />
-    <section className="sim-card-flat space-y-3 p-5" aria-label={t('Pilih jenis harga')}>
-      <h2 className="text-sm font-bold">{t('Jenis harga')}</h2>
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4" role="group" aria-label={t('Pilih jenis harga')}>
-        {PIHPS_PRICE_TYPES.map(type => <button key={type.id} type="button" aria-pressed={priceType === type.id} onClick={() => onPriceTypeChange(type.id)} className={priceType === type.id ? 'sim-button-primary justify-center' : 'sim-button-secondary justify-center'}>{t(type.label)}</button>)}
-      </div>
-      <p className="text-sm leading-6"><strong>{t(typeInfo.label)}</strong> · {t(typeInfo.description)}</p>
-      <p className="text-xs leading-5 text-[var(--sim-color-muted)]">{t('Setiap jenis harga memiliki cakupan dan tanggal data sendiri. Data tidak dicampur; selisih antarjenis bukan otomatis keuntungan pedagang.')}</p>
-    </section>
-    <div className="sim-card-flat space-y-4 p-5">
+  return <div className="pm-module">
+    <header className="pm-hero flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><span className="pm-badge">{t('Data PIHPS Bank Indonesia')}</span><div className="mt-2"><span className="pm-badge !bg-[var(--theme-rose-soft)] !text-[var(--theme-rose)]">{t('Bawang Merah Ukuran Sedang')}</span></div><h1>{t('Market Insight PIHPS')}</h1><p>{t('Pantau empat jenis harga pada rantai distribusi bawang merah. Bandingkan catatan per provinsi dan pelajari riwayat publikasinya.')}</p></div><button type="button" onClick={() => { void load() }} disabled={loading} className="sim-button-secondary shrink-0"><RefreshCw className={'h-4 w-4 ' + (loading ? 'animate-spin' : '')} />{t('Segarkan')}</button></header>
+    <PriceTypeCards value={priceType} onChange={onPriceTypeChange} province={province} date={date} revision={revision} />
+    <div className="pm-panel space-y-4">
       <form className="flex flex-wrap items-end gap-4" onSubmit={event => {
         event.preventDefault()
         const selected = new FormData(event.currentTarget).get('date')
@@ -129,12 +122,13 @@ function MarketInsightContent({ priceType, onPriceTypeChange }: { priceType: Pih
       {!loading && !date && effectiveDate && effectiveDate < jakartaToday() && <p role="status" className="text-sm">{t('Yang ditampilkan adalah publikasi terbaru yang tersimpan, bukan harga real-time hari ini.')}</p>}
     </div>
     {error && <p role="alert" className="sim-card-flat p-4">{t(error)}</p>}
-    <div className="grid gap-3 sm:grid-cols-3">
-      <MetricCard label={t('Provinsi dengan data')} value={loading ? '...' : prices.length} hint={t('Cakupan publikasi pada tanggal perbandingan')} icon={Globe2} />
-      <MetricCard label={t('Harga terendah')} value={loading ? '...' : rupiah(prices.length ? Math.min(...prices) : null)} icon={TrendingUp} />
-      <MetricCard label={t('Harga tertinggi')} value={loading ? '...' : rupiah(maxPrice || null)} icon={TrendingUp} tone="amber" />
-    </div>
-    <section className="sim-card-flat space-y-4 p-5 sm:p-6" aria-busy={historyLoading}>
+    <div className="pm-stats">{[
+      {label:'Harga provinsi terpilih',value:rupiah(regional.find(r=>String(r.prov_id)===province)?.harga ?? null),hint:provinceName || 'Pilih provinsi',icon:Wallet},
+      {label:'Publikasi sumber',value:effectiveDate || 'Belum tersedia',hint:typeInfo.label,icon:CalendarDays},
+      {label:'Cakupan wilayah',value:prices.length+' '+t('provinsi'),hint:'Provinsi dengan publikasi pada tanggal ini',icon:Globe2},
+      {label:'Retensi riwayat',value:'60 '+t('hari'),hint:'Jendela kalender penyimpanan data',icon:History},
+    ].map(({label,value,hint,icon:Icon})=><div className="pm-stat" key={label}><div className="pm-stat-icon"><Icon className="h-5 w-5" /></div><p className="pm-stat-label">{t(label)}</p><p className="pm-stat-value">{loading?'…':value}</p><p className="pm-stat-hint">{t(hint)}</p></div>)}</div>
+    <section className="pm-panel space-y-4" aria-busy={historyLoading}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><h2 className="text-lg font-bold">{t('Riwayat harga provinsi')}{provinceName ? ' · ' + provinceName : ''}</h2><p className="mt-1 text-xs text-[var(--sim-color-muted)]">{t(typeInfo.label)} · {t('Akhir rentang')}: {historyEnd} · {days} {t('hari kalender')}</p></div>
         <div className="flex flex-wrap gap-3">
@@ -153,7 +147,7 @@ function MarketInsightContent({ priceType, onPriceTypeChange }: { priceType: Pih
       <p className="text-xs leading-5 text-[var(--sim-color-muted)]">{t('Tanggal tanpa publikasi tidak diisi dengan harga sintetis. Grafik menghubungkan catatan yang tersedia, bukan hasil peramalan. Perubahan dihitung terhadap publikasi sebelumnya, bukan selalu terhadap kemarin.')}</p>
       <p className="text-xs text-[var(--sim-color-muted)]">{t('Penyimpanan dibatasi 60 hari kalender terakhir; data yang lebih lama dibersihkan setelah Admin menyelesaikan sinkronisasi.')}</p>
     </section>
-    <section className="sim-card-flat space-y-4 p-5" aria-busy={loading}>
+    <section className="pm-panel space-y-4" aria-busy={loading}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><h2 className="text-lg font-bold">{t('Perbandingan harga antarprovinsi')}</h2><p className="mt-1 text-xs text-[var(--sim-color-muted)]">{t(typeInfo.label)} · {effectiveDate || '—'}</p></div>
         <div className="flex flex-wrap gap-3">
@@ -163,5 +157,6 @@ function MarketInsightContent({ priceType, onPriceTypeChange }: { priceType: Pih
       </div>
       {loading ? <p role="status">{t('Memuat data...')}</p> : error ? <p>{t('Perbandingan belum dapat ditampilkan.')}</p> : !regional.length ? <p>{t('Tidak ada data tersimpan untuk jenis harga dan tanggal ini. Pilih tanggal lain atau tanggal terbaru tersedia.')}</p> : !displayed.length ? <p>{t('Provinsi tidak ditemukan pada tanggal ini.')}</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption className="sr-only">{t('Harga per provinsi berdasarkan PIHPS')} · {t(typeInfo.label)}</caption><thead><tr className="border-b border-[var(--theme-line)]"><th scope="col" className="p-3">{t('Provinsi')}</th><th scope="col" className="p-3">{t('Tanggal publikasi')}</th><th scope="col" className="p-3">{t('Harga per kg')}</th><th scope="col" className="p-3">{t('Riwayat')}</th></tr></thead><tbody>{displayed.map(row => <tr key={row.id} className={'border-b border-[var(--theme-line)] ' + (String(row.prov_id) === province ? 'bg-[var(--sim-green-50)]/40' : '')}><td className="p-3 font-semibold">{row.provinsi}</td><td className="whitespace-nowrap p-3">{row.tanggal}</td><td className="min-w-40 p-3"><span className="sim-tabular">{rupiah(Number(row.harga))}</span><div aria-hidden="true" className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--theme-line)]"><div className="h-full rounded-full bg-emerald-600" style={{ width: (Number(row.harga) / maxPrice * 100) + '%' }} /></div></td><td className="p-3"><button type="button" onClick={() => setProvince(String(row.prov_id))} className="sim-button-secondary" aria-label={t('Lihat riwayat') + ' ' + row.provinsi}>{t('Lihat riwayat')}</button></td></tr>)}</tbody></table></div>}
     </section>
+    <aside className="pm-soft flex items-start gap-3 text-xs leading-6"><TrendingUp className="mt-1 h-5 w-5 shrink-0 text-[var(--theme-green)]" /><p>{t('Setiap jenis harga memiliki cakupan dan tanggal data sendiri. Data tidak dicampur; selisih antarjenis bukan otomatis keuntungan pedagang.')} {t('Riwayat disajikan sesuai publikasi yang tersimpan, tanpa ramalan harga.')}</p></aside>
   </div>
 }

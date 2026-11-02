@@ -68,7 +68,7 @@ test('Landing shows only the four PM modules without competition video in both l
     assert.doesNotMatch(markup, /<video|\.mp4|\/media\/|CV|forecasting/)
     assert.equal((markup.match(/<article /g) || []).length, 4)
     assert.ok(markup.includes(i18n.translate('Empat modul SIMANTRI PM', language)))
-    assert.ok(markup.includes(i18n.translate('Modul listing panen masih dalam tahap pengembangan, belum menjadi marketplace aktif.', language)))
+    assert.ok(markup.includes(i18n.translate('Cari penawaran panen, kelola informasi stok sendiri, dan hubungi penjual.', language)))
     for (const routeName of ['penyakit', 'chat', 'harga', 'panen']) assert.match(markup, new RegExp(`href="/dashboard/${routeName}"`))
   }
 })

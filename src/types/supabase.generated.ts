@@ -61,6 +61,7 @@ export type Database = {
           id: string
           image_paths: string[]
           location: string
+          moderation_note: string | null
           price_per_kg: number
           quantity_kg: number
           seller_id: string
@@ -77,6 +78,7 @@ export type Database = {
           id?: string
           image_paths?: string[]
           location: string
+          moderation_note?: string | null
           price_per_kg: number
           quantity_kg: number
           seller_id: string
@@ -93,6 +95,7 @@ export type Database = {
           id?: string
           image_paths?: string[]
           location?: string
+          moderation_note?: string | null
           price_per_kg?: number
           quantity_kg?: number
           seller_id?: string

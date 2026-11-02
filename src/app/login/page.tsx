@@ -2,11 +2,12 @@
 
 import { useLanguage } from '@/components/ui/LanguageProvider'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import ConfirmationNotice from '@/components/auth/ConfirmationNotice'
 import {
   AlertCircle,
   Loader2,
@@ -56,7 +57,9 @@ export default function LoginPage() {
 
       if (error) {
         setErrorMessage(
-          error.message === 'Invalid login credentials'
+          error.code === 'email_not_confirmed'
+            ? 'Email Anda belum dikonfirmasi. Buka tautan konfirmasi di kotak masuk atau folder spam, lalu coba masuk kembali.'
+            : error.message === 'Invalid login credentials'
             ? 'Email atau kata sandi tidak cocok. Silakan periksa kembali data akun Anda.'
             : error.message
         )
@@ -217,6 +220,10 @@ export default function LoginPage() {
             </div>
 
             {/* Error Message */}
+            <Suspense fallback={null}>
+              <ConfirmationNotice />
+            </Suspense>
+
             {errorMessage && (
               <div className="mb-4 p-3.5 rounded-2xl bg-red-50 dark:bg-[var(--theme-red-soft)] border border-red-200 dark:border-[var(--theme-red)] text-left flex items-start gap-2.5 text-red-800 dark:text-[var(--theme-red)] animate-fadeIn">
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-[var(--theme-red)] shrink-0 mt-0.5" />

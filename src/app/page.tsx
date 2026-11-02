@@ -862,12 +862,12 @@ export default function LandingPage() {
                   <h3 className="font-editorial text-[22px] font-semibold text-white mb-2">
                     {t("Harvest Listing")}</h3>
                   <p className="text-[13px] text-[#81a993] dark:text-[var(--theme-muted)] mb-4 line-clamp-3 leading-relaxed">
-                    {t("Modul listing hasil panen, informasi ketersediaan, dan kontak penjual. Masih dalam rencana pengembangan prototype.")}</p>
+                    {t("Temukan penawaran hasil panen, informasi ketersediaan, dan kontak penjual melalui moderasi Admin.")}</p>
                   <Link
                     href="/dashboard/panen"
                     className="hover-btn-scale inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#b8efc9] hover:text-white px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 self-start"
                   >
-                    <span>{t("Lihat Rencana Harvest Listing")}</span>
+                    <span>{t("Buka Marketplace Panen")}</span>
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -1386,7 +1386,7 @@ export default function LandingPage() {
                     <h3 className="font-editorial text-[20px] font-semibold text-[#1A221D] dark:text-[var(--theme-ink)] mt-1 mb-3">
                       {t("Masyarakat dan Calon Pembeli")}</h3>
                     <p className="text-[13px] text-[#5E665F] dark:text-[var(--theme-body)] leading-relaxed mb-6">
-                      {t("Mempelajari budidaya melalui Dunia Brambang. Akses listing panen dan kontak penjual akan dikembangkan pada modul Harvest Listing.")}</p>
+                      {t("Mempelajari budidaya melalui Dunia Brambang serta mengakses informasi hasil panen dan kontak penjual melalui Harvest Listing.")}</p>
                   </div>
                   <ul className="space-y-2 text-[12.5px] text-[#414844] dark:text-[var(--theme-body)] pt-4 border-t border-[#173e2d]/10 dark:border-[var(--theme-green)]/10">
                     <li className="flex items-center gap-2">
@@ -1395,7 +1395,7 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#36684a]"></span>
-                      <span>{t("Rencana akses informasi hasil panen")}</span>
+                      <span>{t("Akses informasi hasil panen")}</span>
                     </li>
                   </ul>
                 </div>

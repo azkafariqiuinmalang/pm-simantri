@@ -10,7 +10,7 @@ export function PlatformModules() {
     { icon: BookOpen, title: t('Informasi Penyakit'), href: '/dashboard/penyakit', description: t('Pelajari gejala dan foto referensi penyakit tanpa diagnosis otomatis.') },
     { icon: Sparkles, title: t('AI Asisten (SIMA)'), href: '/dashboard/chat', description: t('Ajukan pertanyaan budidaya dan baca panduan dari asisten agronomi SIMA.') },
     { icon: TrendingUp, title: t('Market Insight PIHPS'), href: '/dashboard/harga', description: t('Bandingkan harga aktual antarprovinsi dan baca riwayat yang tersedia.') },
-    { icon: ShoppingBasket, title: t('Harvest Listing'), href: '/dashboard/panen', description: t('Modul listing panen masih dalam tahap pengembangan, belum menjadi marketplace aktif.') },
+    { icon: ShoppingBasket, title: t('Harvest Listing'), href: '/dashboard/panen', description: t('Cari penawaran panen, kelola informasi stok sendiri, dan hubungi penjual.') },
   ]
   return <section id="masalah" aria-labelledby="platform-modules-title" className="w-full scroll-mt-24 bg-[#FAF7F2] px-4 py-16 dark:bg-[var(--theme-canvas)] sm:px-6 lg:px-14 lg:py-24">
     <div className="mx-auto max-w-6xl">

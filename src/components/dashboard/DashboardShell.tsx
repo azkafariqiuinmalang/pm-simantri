@@ -105,7 +105,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#F6F8F6] dark:bg-[var(--theme-canvas)] font-jakarta">
+      <div className="flex min-h-dvh items-center justify-center bg-[#F1FAF3] dark:bg-[var(--theme-canvas)] font-jakarta">
         <div className="flex flex-col items-center gap-3" role="status">
           <Loader2 className="h-8 w-8 animate-spin text-simantri-600 dark:text-[var(--theme-green)]" aria-hidden="true" />
           <p className="text-sm font-semibold text-slate-700 dark:text-[var(--theme-body)]">{t("Memuat Sistem SIMANTRI…")}</p>
@@ -115,7 +115,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8F6] dark:bg-[var(--theme-canvas)] font-jakarta flex overflow-x-clip text-slate-800 dark:text-[var(--theme-ink)]">
+    <div className="min-h-screen bg-[#F1FAF3] dark:bg-[var(--theme-canvas)] font-jakarta flex overflow-x-clip text-slate-800 dark:text-[var(--theme-ink)]">
       <Sidebar
         profile={profile}
         isOpen={isSidebarOpen}
@@ -220,7 +220,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           {children}
         </main>
 
-        {pathname !== '/dashboard/chat' && <FloatingAssistant />}
+        {pathname !== '/dashboard/chat' && <FloatingAssistant quiet={pathname.startsWith('/dashboard/panen') || pathname === '/dashboard/harga' || pathname === '/dashboard/penyakit'} />}
 
         {/* Mobile Bottom Navigation Bar */}
         <nav

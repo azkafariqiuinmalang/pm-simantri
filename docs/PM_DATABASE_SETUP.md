@@ -125,9 +125,13 @@ Dari root PM (SIMANTRI):
 ## Pekerjaan berikutnya yang belum dilakukan
 
 1. Jadwal cron belum diaktifkan. Implementasikan otorisasi server tepercaya sebelum mengaktifkan scheduler; mengisi CRON_SECRET saja tidak cukup. Sinkronisasi sesi Admin sudah tersedia dan tidak memerlukan service-role key.
-2. Bucket Storage foto dan alur unggah belum dibuat. Konfigurasi storage lama tidak disalin.
-3. Katalog empat penyakit dan editor Admin tersedia (rincian di docs/INFORMASI_PENYAKIT.md). Penambahan penyakit, unggah foto berizin, dan UI Harvest Listing belum tersedia.
+2. Bucket foto privat pm-harvest dan alur unggah PM tersedia sejak 2 November 2026. Konfigurasi storage lomba tidak disalin. Lihat docs/HARVEST_LISTING.md.
+3. Katalog empat penyakit dan editor Admin tersedia (rincian di docs/INFORMASI_PENYAKIT.md). Penambahan penyakit, unggah foto berizin, masih menjadi pekerjaan lanjutan. UI Harvest Listing kini tersedia.
 4. Alur konfirmasi email dan reset password memerlukan akun dengan kotak masuk sungguhan bila akan digunakan; alamat demo bukan alamat untuk menerima email. Login/profil dan akses Admin demo sudah diamati berhasil di browser.
 5. Pengujian browser sebagai Petani dengan akun terpisah serta pengujian menyeluruh modul lain tetap perlu dilanjutkan. Tes RLS rollback dan unit tidak menggantikan uji pengguna.
 
 Backup konfigurasi lama scratch/.env.before-pm-database-split sudah dikeluarkan bersama scratch/ pada 26 Oktober 2026 dan berada di Recycle Bin. Jangan memulihkannya sebagai .env.local: backup tersebut menunjuk database lomba. Konfigurasi PM aktif tetap dipertahankan, tidak disalin ke laporan pembersihan, dan tidak diubah dalam pembersihan.
+
+## Harvest Listing — 2 November 2026
+
+Migrasi docs/database/pm_harvest_listing_migration.sql diterapkan melalui SQL Editor proyek PM. Pemeriksaan bucket privat, kolom moderation_note, trigger guard, dan tiga kebijakan Storage semuanya true. Uji SQL aman dengan RLS tetap aktif lulus 17 pemeriksaan; seluruh fixture di-rollback. Unggah foto serta draft → pending → published telah diamati bekerja lewat aplikasi. Tidak ada perubahan proyek lomba.

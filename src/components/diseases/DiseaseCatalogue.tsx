@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, BookOpen, ChevronDown, ImageIcon, Leaf, Search, ShieldCheck } from 'lucide-react'
-import { PageHeading } from '@/components/dashboard/DashboardUI'
+import { ArrowUpRight, Bot, ChevronDown, ImageIcon, Leaf, Search, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useLanguage } from '@/components/ui/LanguageProvider'
 import { DISEASE_CATALOGUE, DISEASE_COLUMNS, DISEASE_DISCLAIMER, filterDiseases, isDiseaseEntry, type DiseaseEntry } from '@/lib/diseases/catalogue'
@@ -34,9 +33,9 @@ export default function DiseaseCatalogue() {
     return () => { active = false }
   }, [retry])
   const visible = filterDiseases(entries, query, part)
-  return <div className="sim-page mx-auto max-w-6xl space-y-6">
-    <PageHeading title={t('Kenali penyakit bawang merah')} description={t('Amati gejalanya, bandingkan rujukannya, lalu tentukan langkah awal dengan pendampingan petugas.')} icon={BookOpen} />
-    <section className="sim-card-flat overflow-hidden" aria-label={t('Cara menggunakan katalog')}>
+  return <div className="pm-module">
+    <header className="pm-hero"><div className="flex flex-wrap gap-2"><span className="pm-badge">{t('Referensi publikasi pertanian')}</span><span className="pm-badge">{t('Pencocokan gejala secara manual')}</span></div><h1>{t('Katalog Informasi Penyakit Bawang Merah')}</h1><p>{t('Kenali ciri penyakit, baca langkah pencegahan, dan bandingkan foto pada sumber resmi. Materi disajikan sebagai panduan untuk memahami kondisi tanaman.')}</p><div className="pm-soft mt-6 flex items-start gap-3 text-xs leading-6"><ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[var(--theme-green)]" /><span>{t(DISEASE_DISCLAIMER)}</span></div></header>
+    <section className="pm-panel overflow-hidden !p-0" aria-label={t('Cara menggunakan katalog')}>
       <div className="border-b border-[var(--sim-color-border)] bg-[var(--sim-green-50)]/50 p-5 dark:bg-[var(--theme-raised)] sm:p-6">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sim-color-primary)] dark:text-[var(--theme-green)]">{t('Katalog referensi • pencocokan manual')}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -59,13 +58,15 @@ export default function DiseaseCatalogue() {
       {visible.map(entry => {
         const guide = entry.metadata.disease
         const sections: [string, string[]][] = [['Pencegahan', guide.prevention], ['Tindakan awal', guide.first_steps]]
-        return <article key={entry.id} className="sim-card-flat overflow-hidden">
+        return <article key={entry.id} className="pm-harvest-card overflow-hidden">
+          <a href={guide.photo_reference.url} target="_blank" rel="noopener noreferrer" className="relative flex min-h-36 items-center justify-between gap-4 bg-[var(--theme-green-soft)] p-6"><div><span className="pm-badge !bg-[var(--theme-surface)]">{entry.doc_id}</span><p className="mt-5 flex items-center gap-2 text-xs font-bold text-[var(--theme-green)]"><ImageIcon className="h-4 w-4" />{t('Lihat foto pada dokumen resmi')}<ArrowUpRight className="h-4 w-4" /></p></div><Leaf className="h-16 w-16 shrink-0 text-[var(--theme-green)] opacity-25" aria-hidden="true" /></a>
           <div className="border-b border-[var(--sim-color-border)] p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3"><Leaf className="h-6 w-6 text-[var(--sim-color-primary)] dark:text-[var(--theme-green)]" aria-hidden="true" /><span className="text-xs text-[var(--sim-color-muted)]">{guide.parts.map(p => t(p)).join(' · ')}</span></div>
             <h2 className="mt-4 text-xl font-bold tracking-tight">{entry.title}</h2><p className="mt-1 text-xs italic text-[var(--sim-color-muted)]">{guide.scientific_name}</p><p className="mt-3 text-sm leading-6 text-[var(--sim-color-body)]">{entry.summary}</p>
           </div>
           <div className="p-5 sm:p-6">
-            <h3 className="text-sm font-bold">{t('Gejala yang dapat diamati')}</h3><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-[var(--sim-color-body)]">{guide.symptoms.map((s, i) => <li key={i}>{s}</li>)}</ul>
+            <div className="pm-soft"><h3 className="text-xs font-bold uppercase tracking-wide text-[var(--theme-green)]">{t('Gejala yang dapat diamati')}</h3><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-[var(--sim-color-body)]">{guide.symptoms.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
+            <div className="mt-5 space-y-3 text-sm leading-6"><p><ShieldCheck className="mr-2 inline h-4 w-4 text-[var(--theme-green)]" /><strong>{t('Pencegahan')}: </strong>{guide.prevention[0]}</p><p><Leaf className="mr-2 inline h-4 w-4 text-[var(--theme-rose)]" /><strong>{t('Tindakan awal')}: </strong>{guide.first_steps[0]}</p></div>
             <details className="group mt-5 border-t border-[var(--sim-color-border)] pt-4">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[var(--sim-color-primary)] dark:text-[var(--theme-green)]">{t('Pencegahan, tindakan & sumber')}<ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" /></summary>
               <div className="mt-5 space-y-5">
@@ -81,10 +82,12 @@ export default function DiseaseCatalogue() {
                 <p className="border-t border-[var(--sim-color-border)] pt-3 text-xs leading-5 text-[var(--sim-color-muted)]">{t('Ringkasan editorial SIMANTRI berdasarkan rujukan publik; belum divalidasi ahli dan bukan bukti pemeriksaan lapangan. Sumber lama tidak digunakan sebagai daftar dosis atau registrasi pestisida terkini.')}</p>
               </div>
             </details>
+            <Link href="/dashboard/chat" className="sim-button-primary mt-5 flex justify-center"><Bot className="h-4 w-4" />{t('Tanyakan panduan ke SIMA')}</Link>
           </div>
         </article>
       })}
     </div>}
+    <aside className="pm-contact-banner flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-xl font-bold">{t('Masih ragu dengan gejala tanaman?')}</h2><p>{t('Baca rujukan lengkap dan gunakan SIMA untuk mempelajari panduan. Untuk memastikan penyakit, konsultasikan kondisi tanaman kepada POPT atau penyuluh setempat.')}</p></div><Link href="/dashboard/chat" className="sim-button-secondary shrink-0 !bg-white !text-emerald-900"><Bot className="h-4 w-4" />{t('Buka SIMA')}</Link></aside>
     <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--sim-color-border)] pt-5 text-xs text-[var(--sim-color-muted)]"><p>{t('Materi teknis berasal dari publikasi pemerintah, bukan integrasi langsung database dinas.')}</p><Link href="/dunia-brambang" className="font-semibold underline">{t('Jelajahi Dunia Brambang')}</Link></footer>
   </div>
 }

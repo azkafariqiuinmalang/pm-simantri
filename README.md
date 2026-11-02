@@ -11,7 +11,7 @@ Kebutuhan produk, alur Petani/Admin, kriteria penerimaan dan gap implementasi ad
 | Informasi penyakit | Katalog empat penyakit, pencarian nama/gejala dan filter bagian tanaman. Admin menyunting materi serta draft/published. Rujukan teknis pemerintah dan tautan foto PDF dengan kredit; unggah/rehosting foto dan penambahan penyakit belum tersedia. |
 | AI Assistant RAG | Implementasi sebelumnya dipertahankan dengan batas kemampuan versi PM. |
 | Market Insight PIHPS | Empat jenis harga: produsen, pedagang besar, pasar tradisional, dan pasar modern. Filter tanggal/provinsi dan grafik 7/30/60 hari. Tombol Admin mengambil harga terbaru keempat jenis; sinkronisasi berhasil diikuti pembersihan riwayat lebih tua dari 60 hari kalender. Uji nyata 30 hari mengisi 2.685 catatan; data kosong tidak direkayasa. |
-| Harvest Listing | Belum diimplementasikan. Halaman saat ini menjelaskan rencana modul, bukan marketplace aktif. |
+| Harvest Listing | Marketplace Panen dan Kelola Panen Saya: pencarian/filter, detail, draf, foto privat, pengajuan, moderasi Admin dengan catatan, kontak WhatsApp/telepon, serta status habis. Uji terbatas; tanpa pembayaran/pengiriman. Lihat docs/HARVEST_LISTING.md. |
 
 Dunia Brambang, login, profil, tema, dan bahasa dipertahankan.
 CV, forecasting, verifikasi Penyuluh, sinyal wilayah, dan usulan pengetahuan tidak lagi menjadi rute aplikasi aktif.

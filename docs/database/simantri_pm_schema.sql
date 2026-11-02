@@ -289,3 +289,6 @@ comment on table public.harvest_listings is 'PM foundation only: marketplace UI 
 comment on table public.market_price is 'Legacy-compatible history for East Java; not a Sukomoro market or Nganjuk district quote.';
 comment on table public.knowledge_entries is 'Local reference documents imported without asserting independent scientific verification.';
 notify pgrst,'reload schema';
+
+-- After applying this baseline to a fresh PM project, apply pm_harvest_listing_migration.sql.
+-- It adds moderation_note, the transition guard, and private photo storage policies.

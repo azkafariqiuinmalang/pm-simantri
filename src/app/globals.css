@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "./modules.css";
 
 /* Experience tokens: shared timing, no change to the approved visual palette. */
 :root {

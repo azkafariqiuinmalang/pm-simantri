@@ -11,7 +11,7 @@ const modules = [
   { title: 'Informasi Penyakit', href: '/dashboard/penyakit', icon: BookOpen, description: 'Pelajari foto referensi, gejala, dan panduan penanganan. Pencocokan dilakukan secara mandiri.' },
   { title: 'AI Assistant RAG', href: '/dashboard/chat', icon: Bot, description: 'Tanyakan budidaya bawang merah kepada SIMA dengan rujukan knowledge base.' },
   { title: 'Market Insight PIHPS', href: '/dashboard/harga', icon: TrendingUp, description: 'Baca harga aktual, riwayat, serta perbandingan provinsi berdasarkan data yang tersedia.' },
-  { title: 'Harvest Listing', href: '/dashboard/panen', icon: ShoppingBasket, description: 'Modul listing hasil panen direncanakan pada tahap pengembangan berikutnya.' },
+  { title: 'Harvest Listing', href: '/dashboard/panen', icon: ShoppingBasket, description: 'Cari penawaran panen, kelola stok sendiri, dan hubungi penjual setelah publikasi Admin.' },
 ]
 
 export default function DashboardPage() {
