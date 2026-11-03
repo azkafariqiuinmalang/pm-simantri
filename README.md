@@ -26,6 +26,8 @@ Konfigurasi lokal sudah menunjuk database PM baru. Akun lomba tidak disalin: bua
 
 ## Verifikasi
 
+Panduan sinkronisasi bertahap, batas waktu, konfigurasi environment, dan pemeriksaan setelah deploy ada di [docs/DEPLOYMENT_VERCEL.md](docs/DEPLOYMENT_VERCEL.md). API sinkronisasi kini dibatasi satu tanggal/jenis per permintaan; pilihan rentang 1/7/30/60 hari di halaman Admin tetap tersedia.
+
 Jalankan node --test tests/*.test.cjs untuk tes tanpa jaringan.
 Jalankan pemeriksaan TypeScript dan build sebelum integrasi live.
 Detail scope, arsip pemulihan, dan batas perubahan tersedia di PROJECT_CONTEXT.md serta docs/PM_CLEANUP.md.

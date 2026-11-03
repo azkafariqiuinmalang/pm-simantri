@@ -1,13 +1,28 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export async function createClient() {
+export async function createClient(options: { signal?: AbortSignal } = {}) {
   const cookieStore = await cookies()
+  const signal = options.signal
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // A caller may bound its whole operation (Auth and database included).
+      // Other callers retain the default Supabase fetch behavior.
+      ...(signal ? {
+        global: {
+          fetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, {
+            ...init,
+            signal: AbortSignal.any([
+              signal,
+              ...(init?.signal ? [init.signal] : []),
+              ...(input instanceof Request ? [input.signal] : []),
+            ]),
+          }),
+        },
+      } : {}),
       cookies: {
         getAll() {
           return cookieStore.getAll()

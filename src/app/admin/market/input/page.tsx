@@ -36,7 +36,7 @@ export default function AdminMarketInputPage() {
   const load = useCallback(async () => {
     setLoading(true); setLoadError('')
     try {
-      const response = await fetch('/api/market/price/history?days=60', { cache: 'no-store' })
+      const response = await fetch('/api/market/price/history?days=60', { cache: 'no-store', signal: AbortSignal.timeout(15000) })
       const json = await response.json()
       if (!response.ok) throw new Error()
       setPrices(json.data || [])
@@ -69,16 +69,20 @@ export default function AdminMarketInputPage() {
             const response = await fetch('/api/market/sync-pihps', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ mode: latest ? 'latest' : 'today', tanggal: date, price_type: type.id }),
+              // Longer than the server's 60-second cap; also bounds local/network failures.
+              signal: AbortSignal.timeout(70000),
             })
             const json = await response.json()
-            const rows = json.data?.results || []
+            const rows = Array.isArray(json.data?.results) ? json.data.results : []
             completed.push(...(rows.length ? rows : [{ date, status: 'error', message: json.error?.message || 'Sinkronisasi gagal.' }]).map((row: Omit<SyncResult, 'price_type' | 'type_label'>) => ({ ...row, price_type: type.id, type_label: type.label })))
             setResults([...completed])
             if (response.status === 401 || response.status === 403) {
               setError(json.error?.message || 'Sesi Admin tidak tersedia. Silakan masuk kembali.'); break tasks
             }
-          } catch {
-            completed.push({ date, price_type: type.id, type_label: type.label, status: 'error', message: 'Permintaan gagal. Periksa koneksi dan coba ulang tanggal ini.' })
+          } catch (error) {
+            completed.push({ date, price_type: type.id, type_label: type.label, status: 'error', message: error instanceof Error && error.name === 'TimeoutError'
+              ? 'Permintaan terlalu lama. Periksa hasil tersimpan dan coba ulang tanggal ini.'
+              : 'Permintaan gagal. Periksa koneksi dan coba ulang tanggal ini.' })
             setResults([...completed])
           }
         }

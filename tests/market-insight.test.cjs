@@ -378,3 +378,152 @@ test('the main Admin action syncs all four latest types and cleans up only after
     }
   } finally { global.fetch = original }
 })
+
+test('multi-day API requests are rejected before fetching or writing; range orchestration belongs to the client', async () => {
+  const original = global.fetch
+  let fetched = 0
+  global.fetch = async () => { fetched++; throw new Error('Unexpected upstream call') }
+  try {
+    for (const days of [2, 30, 60]) {
+      const { route, writes } = syncSetup()
+      const response = await route.POST(req({ mode: 'backfill', tanggal: pihps.jakartaToday(), days }))
+      assert.equal(response.status, 400)
+      assert.equal(response.body.error.code, 'SYNC_BATCH_TOO_LARGE')
+      assert.equal(writes.length, 0)
+    }
+    assert.equal(fetched, 0)
+  } finally { global.fetch = original }
+})
+
+test('an upstream timeout produces a failed date with a useful message and no writes', async () => {
+  const original = global.fetch
+  global.fetch = async () => { throw new DOMException('Upstream timed out', 'TimeoutError') }
+  try {
+    const { route, writes } = syncSetup()
+    const response = await route.POST(req({ tanggal: pihps.jakartaToday() }))
+    assert.equal(response.status, 502)
+    assert.equal(response.body.data.results[0].status, 'error')
+    assert.match(response.body.data.results[0].message, /Batas waktu.*ulang/)
+    assert.equal(writes.length, 0)
+  } finally { global.fetch = original }
+})
+
+test('an expired operation deadline during authentication stops before PIHPS or database writes', async () => {
+  const original = AbortSignal.timeout
+  AbortSignal.timeout = () => AbortSignal.abort(new DOMException('Deadline expired', 'TimeoutError'))
+  try {
+    const { route, writes } = syncSetup()
+    const response = await route.POST(req({ tanggal: pihps.jakartaToday() }))
+    assert.equal(response.status, 504)
+    assert.equal(response.body.error.code, 'SYNC_TIMEOUT')
+    assert.equal(writes.length, 0)
+  } finally { AbortSignal.timeout = original }
+})
+
+test('a scoped Supabase deadline covers outgoing Auth/database fetches and preserves caller cancellation', async () => {
+  const original = global.fetch
+  const calls = []
+  global.fetch = async (input, init) => { calls.push({ input, init }); return new Response('{}') }
+  try {
+    const { createClient } = load('src/lib/supabase/server.ts', {
+      '@supabase/ssr': { createServerClient: (_url, _key, options) => options },
+      'next/headers': { cookies: async () => ({ getAll: () => [], set: () => {} }) },
+    })
+    assert.equal((await createClient()).global, undefined)
+    const operation = new AbortController(), caller = new AbortController()
+    const bounded = await createClient({ signal: operation.signal })
+    await bounded.global.fetch('https://example.invalid/auth/v1/user', { headers: { Accept: 'application/json' } })
+    await bounded.global.fetch('https://example.invalid/rest/v1/rpc/test', { signal: caller.signal })
+    caller.abort()
+    assert.equal(calls[0].init.signal.aborted, false)
+    assert.equal(calls[1].init.signal.aborted, true)
+    operation.abort()
+    assert.equal(calls[0].init.signal.aborted, true)
+    assert.equal(calls[0].init.headers.Accept, 'application/json')
+  } finally { global.fetch = original }
+})
+
+function adminRun(buttonText, dayCount = '30') {
+  let finish, index = 0
+  const finished = new Promise(resolve => { finish = resolve })
+  const states = []
+  const { default: AdminPage } = load('src/app/admin/market/input/page.tsx', {
+    react: { ...require('react'),
+      useState: initial => {
+        const stateIndex = index++
+        return [stateIndex === 4 ? dayCount : typeof initial === 'function' ? initial() : initial, value => {
+          states.push({ index: stateIndex, value })
+          if (stateIndex === 2 && value === false) finish()
+        }]
+      },
+      useEffect: () => {}, useCallback: fn => fn, useRef: value => ({ current: value }),
+    },
+    'next/link': {}, '@/lib/market/pihps': pihps, '@/components/dashboard/DashboardUI': {},
+    '@/components/ui/LanguageProvider': { useLanguage: () => ({ t: value => value }) },
+  })
+  function find(node) {
+    if (!node || typeof node !== 'object') return null
+    if (node.type === 'button' && [].concat(node.props.children).includes(buttonText)) return node
+    for (const child of [].concat(node.props?.children || [])) { const found = find(child); if (found) return found }
+    return null
+  }
+  find(AdminPage()).props.onClick()
+  return { finished, states }
+}
+
+test('a 60-day Admin range sends 240 sequential one-day requests, then performs retention once', { timeout: 5000 }, async () => {
+  const original = global.fetch
+  const tasks = []
+  let active = 0, peak = 0, cleaned = 0
+  global.fetch = async (url, options) => {
+    if (url === '/api/market/sync-pihps') {
+      active++; peak = Math.max(peak, active)
+      const body = JSON.parse(options.body)
+      tasks.push(body)
+      await new Promise(resolve => setImmediate(resolve))
+      active--
+      assert.ok(options.signal instanceof AbortSignal)
+      return { ok: true, status: 200, json: async () => ({ data: { results: [{ date: body.tanggal, status: 'synced' }] } }) }
+    }
+    if (url === '/api/market/retention') {
+      cleaned++
+      assert.equal(tasks.length, 240)
+      return { ok: true, json: async () => ({ data: { cutoff_date: pihps.marketRetentionStart() } }) }
+    }
+    return { ok: true, json: async () => ({ data: [] }) }
+  }
+  try {
+    await adminRun('Sinkronkan rentang', '60').finished
+    assert.equal(peak, 1)
+    assert.equal(cleaned, 1)
+    assert.equal(new Set(tasks.map(task => task.tanggal + ':' + task.price_type)).size, 240)
+    assert.deepEqual(tasks.slice(0, 4).map(task => task.price_type), [4, 3, 1, 2])
+    assert.ok(tasks.every(task => task.mode === 'today' && !task.days))
+    assert.equal(tasks[0].tanggal, pihps.marketRetentionStart())
+    assert.equal(tasks.at(-1).tanggal, pihps.jakartaToday())
+  } finally { global.fetch = original }
+})
+
+test('expired Admin sessions stop the queue; HTML timeouts and network timeouts never trigger retention', { timeout: 5000 }, async () => {
+  const original = global.fetch
+  try {
+    for (const failure of ['session', 'html-timeout', 'network-timeout']) {
+      let count = 0, cleaned = 0
+      global.fetch = async url => {
+        if (url === '/api/market/retention') { cleaned++; throw new Error('Unexpected cleanup') }
+        if (url !== '/api/market/sync-pihps') return { ok: true, json: async () => ({ data: [] }) }
+        count++
+        if (failure === 'session') return { ok: false, status: 401, json: async () => ({ error: { message: 'Silakan masuk.' } }) }
+        // A successful first write must not allow cleanup after a later failure.
+        if (count === 1) return { ok: true, status: 200, json: async () => ({ data: { results: [{ date: pihps.jakartaToday(), status: 'synced' }] } }) }
+        if (failure === 'html-timeout') return { ok: false, status: 504, json: async () => { throw new SyntaxError('Unexpected HTML') } }
+        throw new DOMException('Network timeout', 'TimeoutError')
+      }
+      const run = adminRun('Sinkronisasi harga terbaru')
+      await run.finished
+      assert.equal(count, failure === 'session' ? 1 : 4)
+      assert.equal(cleaned, 0)
+      assert.ok(run.states.some(state => Array.isArray(state.value) && state.value.some(row => row.status === 'error')))
+    }
+  } finally { global.fetch = original }
+})
