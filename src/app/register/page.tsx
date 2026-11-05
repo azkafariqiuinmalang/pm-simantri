@@ -47,7 +47,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const role = 'petani'
   const [village, setVillage] = useState('Sukomoro')
   const [agreeTerms, setAgreeTerms] = useState(false)
 
@@ -92,7 +91,7 @@ export default function RegisterPage() {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: fullName.trim(),
-            role: role,
+            role: 'petani',
             village: village,
           },
         },
@@ -307,53 +306,29 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Grid: Role & Kecamatan */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="role"
-                    className="block text-xs font-semibold text-slate-700 dark:text-[var(--theme-body)] mb-1"
+              {/* Field: Kecamatan */}
+              <div>
+                <label
+                  htmlFor="village"
+                  className="block text-xs font-semibold text-slate-700 dark:text-[var(--theme-body)] mb-1"
+                >
+                  {t("Kecamatan / Wilayah")}</label>
+                <div className="relative">
+                  <select
+                    id="village"
+                    name="village"
+                    value={village}
+                    onChange={(e) => setVillage(e.target.value)}
+                    className="w-full h-11 px-3.5 text-sm font-medium text-slate-800 dark:text-[var(--theme-ink)] bg-white dark:bg-[var(--theme-surface)] border border-slate-300 dark:border-[var(--theme-line)] rounded-2xl focus:border-simantri-500 dark:focus:border-[var(--theme-green)] focus:ring-4 focus:ring-simantri-500/15 dark:focus:ring-[var(--theme-green)]/15 transition-all outline-none appearance-none cursor-pointer pr-9"
                   >
-                    {t("Peran Pengguna")}</label>
-                  <div className="relative">
-                    <select
-                      id="role"
-                      name="role"
-                      value={role}
-                      disabled
-                      className="w-full h-11 px-3.5 text-sm font-medium text-slate-800 dark:text-[var(--theme-ink)] bg-white dark:bg-[var(--theme-surface)] border border-slate-300 dark:border-[var(--theme-line)] rounded-2xl focus:border-simantri-500 dark:focus:border-[var(--theme-green)] focus:ring-4 focus:ring-simantri-500/15 dark:focus:ring-[var(--theme-green)]/15 transition-all outline-none appearance-none cursor-pointer pr-9"
-                    >
-                      <option value="petani">{t("Petani Bawang")}</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-[var(--theme-muted)]">
-                      <ChevronRight className="w-4 h-4 rotate-90" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="village"
-                    className="block text-xs font-semibold text-slate-700 dark:text-[var(--theme-body)] mb-1"
-                  >
-                    {t("Kecamatan / Wilayah")}</label>
-                  <div className="relative">
-                    <select
-                      id="village"
-                      name="village"
-                      value={village}
-                      onChange={(e) => setVillage(e.target.value)}
-                      className="w-full h-11 px-3.5 text-sm font-medium text-slate-800 dark:text-[var(--theme-ink)] bg-white dark:bg-[var(--theme-surface)] border border-slate-300 dark:border-[var(--theme-line)] rounded-2xl focus:border-simantri-500 dark:focus:border-[var(--theme-green)] focus:ring-4 focus:ring-simantri-500/15 dark:focus:ring-[var(--theme-green)]/15 transition-all outline-none appearance-none cursor-pointer pr-9"
-                    >
-                      {NGANJUK_VILLAGES.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-[var(--theme-muted)]">
-                      <ChevronRight className="w-4 h-4 rotate-90" />
-                    </div>
+                    {NGANJUK_VILLAGES.map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-[var(--theme-muted)]">
+                    <ChevronRight className="w-4 h-4 rotate-90" />
                   </div>
                 </div>
               </div>
