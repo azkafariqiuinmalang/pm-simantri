@@ -1,11 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { formatPihpsDate, isIsoDate, jakartaToday, latestPihpsObservation, marketRetentionStart, normalizePihpsRows, parsePihpsPriceType, pihpsPriceTypeInfo, pihpsSourceDates, PIHPS_COMMODITY } from '@/lib/market/pihps'
+import { formatPihpsDate, isIsoDate, jakartaToday, latestPihpsObservation, latestPihpsSyncTasks, marketRetentionStart, normalizePihpsRows, parsePihpsPriceType, pihpsPriceTypeInfo, pihpsSourceDates, PIHPS_COMMODITY } from '@/lib/market/pihps'
 
 // Literal export is read by Vercel at build time; no host-specific URL is needed.
 export const maxDuration = 60
 
 const PIHPS_BASE_URL = 'https://www.bi.go.id/hargapangan/WebSite/Home/GetGridData1'
+
+// Read-only planning: the server owns the calendar and checks every series.
+// Paginate because 60 days of regional observations exceed PostgREST's row cap.
+export async function GET() {
+  const deadline = AbortSignal.timeout(45000)
+  try {
+    const supabase = await createClient({ signal: deadline })
+    const { data: { user } } = await supabase.auth.getUser()
+    deadline.throwIfAborted()
+    if (!user) return NextResponse.json({ data: null, error: { message: 'Silakan masuk.', code: 'UNAUTHORIZED' } }, { status: 401 })
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    deadline.throwIfAborted()
+    if (profileError || profile?.role !== 'admin') return NextResponse.json({ data: null, error: { message: 'Sinkronisasi hanya untuk Admin.', code: 'FORBIDDEN' } }, { status: 403 })
+    const today = jakartaToday()
+    const cutoff = marketRetentionStart(today)
+    const stored: Array<{ tanggal: string; price_type: number }> = []
+    const pageSize = 1000
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase.from('market_regional_price').select('tanggal,price_type')
+        .eq('komoditas', PIHPS_COMMODITY).gt('harga', 0).gte('tanggal', cutoff).lte('tanggal', today)
+        .order('tanggal').order('price_type').order('prov_id').range(offset, offset + pageSize - 1)
+      deadline.throwIfAborted()
+      if (error || !Array.isArray(data)) throw new Error('Coverage lookup failed')
+      stored.push(...data)
+      if (data.length < pageSize) break
+    }
+    return NextResponse.json({ data: { tasks: latestPihpsSyncTasks(stored, today), cutoff_date: cutoff, through_date: today }, error: null },
+      { headers: { 'Cache-Control': 'private, no-store' } })
+  } catch (error) {
+    console.error('PIHPS sync planning failed', { timedOut: deadline.aborted, type: error instanceof Error ? error.name : 'Unknown' })
+    return NextResponse.json({ data: null, error: { message: 'Tanggal yang perlu disinkronkan belum dapat diperiksa. Silakan ulangi.', code: deadline.aborted ? 'SYNC_TIMEOUT' : 'SYNC_PLAN_FAILED' } }, { status: deadline.aborted ? 504 : 500 })
+  }
+}
 
 export async function POST(req: NextRequest) {
   // Leave headroom to serialize a useful error before Vercel terminates us.

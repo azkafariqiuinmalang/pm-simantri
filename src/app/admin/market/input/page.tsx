@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { RefreshCw, Database, ExternalLink, Square } from 'lucide-react'
 import { PageHeading } from '@/components/dashboard/DashboardUI'
 import { useLanguage } from '@/components/ui/LanguageProvider'
-import { calendarDates, jakartaToday, marketRetentionStart, PIHPS_PRICE_TYPES } from '@/lib/market/pihps'
+import { calendarDates, jakartaToday, marketRetentionStart, PIHPS_PRICE_TYPES, type PihpsSyncTask } from '@/lib/market/pihps'
 
 interface Price { id: string; tanggal: string; harga: number; source: string; region_name: string }
 interface SyncResult { date: string; price_type: number; type_label: string; status: string; regional_count?: number; source_dates?: string[]; message?: string }
@@ -57,34 +57,48 @@ export default function AdminMarketInputPage() {
     }
     stopRequested.current = false
     const types = PIHPS_PRICE_TYPES.filter(type => latest || priceType === 'all' || String(type.id) === priceType)
-    setSyncing(true); setStopping(false); setError(''); setMessage(''); setRetention(null); setResults([]); setTotal(dates.length * types.length)
+    setSyncing(true); setStopping(false); setError(''); setMessage(''); setRetention(null); setResults([]); setTotal(0)
     const completed: SyncResult[] = []
     try {
+      let tasks: PihpsSyncTask[] = dates.flatMap(tanggal => types.map(type => ({ tanggal, price_type: type.id, mode: 'today' as const })))
+      if (latest) {
+        setCurrentDate(t('Memeriksa tanggal yang belum tersimpan...'))
+        const response = await fetch('/api/market/sync-pihps', { cache: 'no-store', signal: AbortSignal.timeout(70000) })
+        const json = await response.json()
+        if (!response.ok || json.error || !Array.isArray(json.data?.tasks) || !json.data.tasks.length) {
+          throw new Error(json.error?.message || 'Rencana sinkronisasi tidak dapat dimuat. Silakan ulangi.')
+        }
+        tasks = json.data.tasks
+      }
+      setTotal(tasks.length)
       // One bounded request per date/type. Never fan out a large concurrent batch.
-      tasks: for (const date of dates) {
-        for (const type of types) {
-          if (stopRequested.current) break tasks
-          setCurrentDate(date + ' · ' + t(type.label))
-          try {
-            const response = await fetch('/api/market/sync-pihps', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ mode: latest ? 'latest' : 'today', tanggal: date, price_type: type.id }),
-              // Longer than the server's 60-second cap; also bounds local/network failures.
-              signal: AbortSignal.timeout(70000),
-            })
-            const json = await response.json()
-            const rows = Array.isArray(json.data?.results) ? json.data.results : []
-            completed.push(...(rows.length ? rows : [{ date, status: 'error', message: json.error?.message || 'Sinkronisasi gagal.' }]).map((row: Omit<SyncResult, 'price_type' | 'type_label'>) => ({ ...row, price_type: type.id, type_label: type.label })))
-            setResults([...completed])
-            if (response.status === 401 || response.status === 403) {
-              setError(json.error?.message || 'Sesi Admin tidak tersedia. Silakan masuk kembali.'); break tasks
-            }
-          } catch (error) {
-            completed.push({ date, price_type: type.id, type_label: type.label, status: 'error', message: error instanceof Error && error.name === 'TimeoutError'
-              ? 'Permintaan terlalu lama. Periksa hasil tersimpan dan coba ulang tanggal ini.'
-              : 'Permintaan gagal. Periksa koneksi dan coba ulang tanggal ini.' })
-            setResults([...completed])
+      for (const task of tasks) {
+        if (stopRequested.current) break
+        const date = task.tanggal
+        const type = PIHPS_PRICE_TYPES.find(type => type.id === task.price_type)!
+        setCurrentDate(date + ' · ' + t(type.label))
+        try {
+          const response = await fetch('/api/market/sync-pihps', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(task),
+            // Longer than the server's 60-second cap; also bounds local/network failures.
+            signal: AbortSignal.timeout(70000),
+          })
+          const json = await response.json()
+          let rows = Array.isArray(json.data?.results) ? json.data.results : []
+          if ((!response.ok || json.error) && !rows.some((row: SyncResult) => ['error', 'partial', 'invalid_data'].includes(row.status))) {
+            rows = [{ date, status: 'error', message: json.error?.message || 'Sinkronisasi gagal.' }]
           }
+          completed.push(...(rows.length ? rows : [{ date, status: 'error', message: json.error?.message || 'Sinkronisasi gagal.' }]).map((row: Omit<SyncResult, 'price_type' | 'type_label'>) => ({ ...row, price_type: type.id, type_label: type.label })))
+          setResults([...completed])
+          if (response.status === 401 || response.status === 403) {
+            setError(json.error?.message || 'Sesi Admin tidak tersedia. Silakan masuk kembali.'); break
+          }
+        } catch (error) {
+          completed.push({ date, price_type: type.id, type_label: type.label, status: 'error', message: error instanceof Error && error.name === 'TimeoutError'
+            ? 'Permintaan terlalu lama. Periksa hasil tersimpan dan coba ulang tanggal ini.'
+            : 'Permintaan gagal. Periksa koneksi dan coba ulang tanggal ini.' })
+          setResults([...completed])
         }
       }
       const saved = completed.filter(row => row.status === 'synced').length
@@ -93,7 +107,7 @@ export default function AdminMarketInputPage() {
       setMessage(saved + ' ' + t('kombinasi tanggal dan jenis tersimpan') + ' · ' + unavailable + ' ' + t('tanpa publikasi') + ' · ' + failed + ' ' + t('bermasalah') + (stopRequested.current ? ' · ' + t('Dihentikan setelah permintaan aktif selesai.') : ''))
       // Cleanup is a separate atomic database operation, only after a healthy,
       // completed sync. Failure/cancellation must not trigger destructive work.
-      if (saved > 0 && failed === 0 && !stopRequested.current) {
+      if (saved > 0 && failed === 0 && completed.length === tasks.length && !stopRequested.current) {
         try {
           const response = await fetch('/api/market/retention', { method: 'POST' })
           const json = await response.json()
@@ -103,6 +117,8 @@ export default function AdminMarketInputPage() {
           setError('Harga berhasil diperbarui, tetapi pembersihan riwayat belum berhasil. Silakan ulangi sinkronisasi.')
         }
       }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Sinkronisasi belum dapat dimulai. Silakan ulangi.')
     } finally {
       setCurrentDate(''); await load(); setSyncing(false); setStopping(false)
     }
@@ -119,7 +135,8 @@ export default function AdminMarketInputPage() {
       </div>
       <div className="space-y-3 rounded-xl border border-[var(--theme-line)] p-4">
         <button onClick={() => { void sync(1, jakartaToday(), true) }} disabled={syncing} type="button" className="sim-button-primary"><RefreshCw className={'h-4 w-4 ' + (syncing ? 'animate-spin' : '')} />{t(syncing ? 'Menyinkronkan...' : 'Sinkronisasi harga terbaru')}</button>
-        <p className="text-sm leading-6">{t('Sekali klik untuk mengambil harga terbaru keempat jenis dari PIHPS. Tanggal mengikuti sumber, bukan dipaksa menjadi tanggal hari ini.')}</p>
+        <p className="text-sm leading-6">{t('Sekali klik untuk memperbarui keempat jenis harga dan otomatis mengambil tanggal yang belum tersimpan dalam 60 hari terakhir. Tanggal mengikuti publikasi asli PIHPS; hari tanpa publikasi tetap kosong.')}</p>
+        <p className="text-xs leading-5 text-[var(--sim-color-muted)]">{t('Biarkan halaman terbuka sampai selesai. Jika terhenti, klik kembali untuk memeriksa dan melanjutkan tanggal yang masih kosong. Opsi sinkronisasi rentang dapat digunakan untuk memperbarui ulang data yang sudah tersimpan.')}</p>
         <p className="text-xs leading-5 text-[var(--sim-color-muted)]">{t('Setelah sinkronisasi berhasil, riwayat harga di luar 60 hari kalender terakhir dihapus permanen. Pembersihan hanya saat sinkronisasi, bukan otomatis saat berganti hari. Kegagalan atau pembatalan sinkronisasi tidak memicu pembersihan.')}</p>
       </div>
       <details className="space-y-4">
@@ -139,7 +156,7 @@ export default function AdminMarketInputPage() {
       </details>
       {syncing && <div className="space-y-3">
         <p role="status" aria-live="polite" className="text-sm">{results.length}/{total} · {currentDate} · {t(stopping ? 'Menunggu permintaan aktif selesai...' : 'Memeriksa publikasi PIHPS...')}</p>
-        <progress value={results.length} max={total} aria-label={t('Progres sinkronisasi')} className="h-3 w-full accent-emerald-600" />
+        {total > 0 ? <progress value={results.length} max={total} aria-label={t('Progres sinkronisasi')} className="h-3 w-full accent-emerald-600" /> : <progress aria-label={t('Memeriksa tanggal yang belum tersimpan...')} className="h-3 w-full accent-emerald-600" />}
         <button type="button" className="sim-button-secondary" disabled={stopping} onClick={() => { stopRequested.current = true; setStopping(true) }}><Square className="h-4 w-4" />{t('Hentikan setelah permintaan ini')}</button>
       </div>}
       {error && <p role="alert">{t(error)}</p>}
@@ -148,7 +165,7 @@ export default function AdminMarketInputPage() {
       {!!results.length && <div className="max-h-96 overflow-auto"><table className="w-full text-left text-sm">
         <caption className="mb-3 text-left font-semibold">{t('Hasil per tanggal dan jenis harga — pengulangan tidak membuat duplikat.')}</caption>
         <thead><tr className="border-b border-[var(--theme-line)]"><th scope="col" className="p-3">{t('Tanggal data / pemeriksaan')}</th><th scope="col" className="p-3">{t('Jenis harga')}</th><th scope="col" className="p-3">{t('Status')}</th><th scope="col" className="p-3">{t('Provinsi')}</th><th scope="col" className="p-3">{t('Keterangan')}</th></tr></thead>
-        <tbody>{results.map(row => <tr key={row.date + ':' + row.price_type} className="border-b border-[var(--theme-line)]"><td className="whitespace-nowrap p-3">{row.date}</td><td className="p-3">{t(row.type_label)}</td><td className="p-3">{t(statusLabels[row.status] || row.status)}</td><td className="p-3">{row.regional_count ?? 0}</td><td className="min-w-52 p-3">{row.message ? t(row.message) : '—'}{row.source_dates?.length ? <span className="mt-1 block text-xs text-[var(--sim-color-muted)]">{t('Tanggal pada sumber')}: {row.source_dates.join(', ')}</span> : null}</td></tr>)}</tbody>
+        <tbody>{results.map((row, index) => <tr key={row.date + ':' + row.price_type + ':' + index} className="border-b border-[var(--theme-line)]"><td className="whitespace-nowrap p-3">{row.date}</td><td className="p-3">{t(row.type_label)}</td><td className="p-3">{t(statusLabels[row.status] || row.status)}</td><td className="p-3">{row.regional_count ?? 0}</td><td className="min-w-52 p-3">{row.message ? t(row.message) : '—'}{row.source_dates?.length ? <span className="mt-1 block text-xs text-[var(--sim-color-muted)]">{t('Tanggal pada sumber')}: {row.source_dates.join(', ')}</span> : null}</td></tr>)}</tbody>
       </table></div>}
       <p className="text-xs leading-5 text-[var(--sim-color-muted)]">{t('Sinkronisasi dijalankan oleh Admin saat halaman ini terbuka. Jadwal otomatis belum diaktifkan. Tidak ada harga sintetis atau penyalinan data dari versi lomba.')}</p>
     </section>

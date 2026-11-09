@@ -80,6 +80,29 @@ export function marketRetentionStart(today = jakartaToday()): string {
   return calendarDates(today, MARKET_RETENTION_DAYS)[0]
 }
 
+export interface PihpsSyncTask {
+  tanggal: string
+  price_type: PihpsPriceType
+  mode: 'latest' | 'today'
+}
+
+/** Refresh every latest series, then fill holes independently within retention.
+ * A later observation must never hide a missed date or another missing series.
+ * Dates without publication remain holes and can be checked again next time.
+ */
+export function latestPihpsSyncTasks(stored: Array<{ tanggal: string; price_type: number }>, today = jakartaToday()): PihpsSyncTask[] {
+  const dates = calendarDates(today, MARKET_RETENTION_DAYS)
+  if (!dates.length) throw new Error('Tanggal sinkronisasi tidak valid.')
+  const existing = new Set(stored.map(row => row.tanggal + ':' + row.price_type))
+  const tasks: PihpsSyncTask[] = PIHPS_PRICE_TYPES.map(type => ({ tanggal: today, price_type: type.id, mode: 'latest' }))
+  for (const tanggal of dates.slice(0, -1)) {
+    for (const type of PIHPS_PRICE_TYPES) {
+      if (!existing.has(tanggal + ':' + type.id)) tasks.push({ tanggal, price_type: type.id, mode: 'today' })
+    }
+  }
+  return tasks
+}
+
 export function latestPihpsObservation(rows: unknown, end: string, priceType: PihpsPriceType) {
   const start = marketRetentionStart(end)
   for (const date of pihpsSourceDates(rows).filter(date => date >= start && date <= end).reverse()) {

@@ -1,16 +1,17 @@
 # Sinkronisasi PIHPS di localhost dan Vercel
 
-Pembaruan: 3 November 2026. Panduan ini mencakup perubahan sinkronisasi Market Insight, bukan pernyataan bahwa seluruh aplikasi sudah lolos uji deployment publik.
+Pembaruan: 9 November 2026. Panduan ini mencakup perubahan sinkronisasi Market Insight, bukan pernyataan bahwa seluruh aplikasi sudah lolos uji deployment publik.
 
 ## Alur sinkronisasi
 
 1. Admin membuka `/admin/market/input` dan memilih harga terbaru atau rentang 1/7/30/60 hari.
-2. Browser menyusun kombinasi tanggal dan jenis harga, lalu mengirim **satu kombinasi per permintaan**, secara berurutan. Rentang 60 hari dengan empat jenis menghasilkan 240 permintaan kecil, bukan satu proses server sepanjang 60 hari.
-3. `POST /api/market/sync-pihps` memeriksa sesi dan peran Admin, mengambil data PIHPS, memvalidasi tanggal publikasi serta komoditas, kemudian melakukan upsert ke database PM.
-4. Halaman menampilkan progres dan hasil setiap kombinasi. Tombol hentikan menunggu permintaan aktif selesai sebelum menghentikan antrean.
-5. Pembersihan data di luar 60 hari kalender hanya dipanggil setelah antrean selesai tanpa kegagalan/pembatalan dan sedikitnya satu hasil tersimpan. Pembersihan berjalan melalui endpoint terpisah dengan otorisasi Admin.
+2. Untuk tombol harga terbaru, browser memanggil `GET /api/market/sync-pihps`. Setelah memeriksa sesi Admin, server membaca cakupan tanggal/jenis dari database PM secara berhalaman, maksimal 1.000 baris per halaman. Server menyusun empat tugas harga terbaru, lalu tugas tanggal/jenis yang belum tersimpan dalam jendela 60 hari, termasuk celah di tengah riwayat. Satu baris regional dengan harga positif menandakan kombinasi tanggal/jenis tersebut sudah tersedia; ini bukan pemeriksaan kelengkapan semua provinsi.
+3. Browser mengirim **satu kombinasi per permintaan**, secara berurutan. Database kosong menghasilkan maksimal 240 permintaan kecil, bukan satu proses server sepanjang 60 hari. Opsi rentang tetap memperbarui semua kombinasi dalam rentang yang dipilih, termasuk yang sudah tersimpan.
+4. `POST /api/market/sync-pihps` memeriksa sesi dan peran Admin, mengambil data PIHPS, memvalidasi tanggal publikasi serta komoditas, kemudian melakukan upsert ke database PM.
+5. Halaman menampilkan progres dan hasil setiap kombinasi. Tombol hentikan menunggu permintaan aktif selesai sebelum menghentikan antrean. Jika pemeriksaan cakupan gagal, antrean penulisan tidak dimulai.
+6. Pembersihan data di luar 60 hari kalender hanya dipanggil setelah antrean selesai tanpa kegagalan/pembatalan dan sedikitnya satu hasil tersimpan. Pembersihan berjalan melalui endpoint terpisah dengan otorisasi Admin.
 
-Halaman Admin **sudah menggunakan pola satu tanggal/jenis** sebelum pembaruan ini. Perubahan kali ini menegakkan batas tersebut juga pada API, sehingga pemanggil lain tidak dapat menjalankan backfill panjang dalam satu fungsi.
+Contoh: harga 6 November sudah tersimpan, 7–8 November terlewat, lalu Admin menekan tombol terbaru pada 9 November. Server tetap memasukkan tanggal 7 dan 8 ke antrean bila belum ada harga tersimpan untuk jenis terkait, sekalipun tanggal 9 sudah tersedia. Jika PIHPS tidak menerbitkan harga pada tanggal tersebut, status tanpa publikasi ditampilkan dan tidak dibuat harga buatan. Tanggal tanpa publikasi akan diperiksa kembali pada klik berikutnya agar publikasi yang terlambat tetap dapat ditemukan. Tidak diperlukan migrasi database maupun environment tambahan.
 
 ## Kontrak API
 
@@ -53,7 +54,7 @@ Batas 45 detik membatalkan permintaan jaringan pada sisi aplikasi; ini bukan jam
 
 ## Batas operasional dan pemeriksaan setelah deploy
 
-- Admin harus membiarkan halaman terbuka sampai selesai. Antrean tidak disimpan sebagai pekerjaan latar belakang dan tidak otomatis berlanjut setelah reload atau tab ditutup. Data yang sudah tersimpan tetap ada; pengulangan rentang tidak membuat duplikat.
+- Admin harus membiarkan halaman terbuka sampai selesai. Antrean tidak disimpan sebagai pekerjaan latar belakang dan tidak otomatis berlanjut setelah reload atau tab ditutup. Klik harga terbaru kembali untuk menghitung ulang celah berdasarkan data yang sudah tersimpan. Tanggal/jenis yang berhasil dipulihkan dilewati; empat tugas terbaru selalu dijalankan lagi. Pengulangan memakai upsert sehingga tidak membuat duplikat.
 - Durasi keseluruhan 240 permintaan dapat lebih dari lima menit; masing-masing permintaan memiliki batasnya sendiri. Proses berurutan menghindari membanjiri PIHPS dengan permintaan paralel dari satu antrean.
 - Uji pada URL Vercel: login Admin, ambil keempat harga terbaru, periksa tanggal/harga sumber dan jumlah baris, lalu ulangi untuk memastikan tidak ada duplikat. Periksa akses ke PIHPS dari jaringan hosting, log kegagalan, dan hasil retensi.
 - Tes lokal dengan mock mencakup penolakan backfill besar, timeout PIHPS, batas operasi saat autentikasi, penerusan sinyal Supabase, antrean 240 permintaan secara berurutan, sesi kedaluwarsa, serta respons timeout HTML/jaringan tanpa cleanup. Tes mock tidak membuktikan akses PIHPS dari Vercel atau hasil database nyata setelah deployment.
@@ -67,3 +68,11 @@ Rujukan: [Next.js maxDuration](https://nextjs.org/docs/app/api-reference/file-co
 - Build Turbopack lokal sempat gagal saat mengakses Google Fonts, kemudian mengalami kegagalan proses CSS di Windows. Webpack dipakai sebagai verifikasi alternatif; perintah build default repositori tidak diubah. Peringatan middleware lama masih ada dan tidak ditangani dalam perubahan sinkronisasi ini.
 - Server sementara hasil build pada loopback port 3101 merespons `/login` dengan HTTP 200 dan POST sinkronisasi tanpa sesi dengan HTTP 401 `UNAUTHORIZED`. Server uji dihentikan setelah pemeriksaan; tidak ada penulisan harga atau cleanup pada pemeriksaan HTTP tersebut.
 - Belum dilakukan deployment Vercel maupun pengambilan PIHPS melalui sesi Admin pada jaringan Vercel. Hasil 240 kombinasi berasal dari tes dengan mock, bukan impor data nyata.
+
+## Verifikasi pengisian hari terlewat 9 November 2026
+
+- Seluruh 97 tes lokal lulus, termasuk 32 tes Market Insight. Kasus baru mencakup dua hari terlewat, celah di tengah riwayat untuk satu jenis, cakupan regional di atas 1.000 baris, data awal kosong, pengulangan setelah celah terisi, penolakan Petani/anonim, dan kegagalan pemeriksaan cakupan tanpa penulisan maupun cleanup.
+- Tes integrasi lokal menjalankan handler tombol Admin, GET perencana, POST sinkronisasi dan normalisasi sumber, lalu memeriksa argumen RPC penyimpanan. Respons PIHPS dan database dimock; ini bukan bukti harga nyata sudah diimpor ke Supabase.
+- TypeScript, lint berkas yang berubah, dan `git diff --check` lulus. Build produksi `next build --webpack` lulus. Build dijalankan di luar sandbox setelah Windows menolak pembuatan folder cache `.next` dengan EPERM. Peringatan migrasi middleware yang sudah ada tetap tercatat.
+- Server sementara hasil build pada loopback port 3101 merespons GET dan POST `/api/market/sync-pihps` tanpa sesi dengan HTTP 401 `UNAUTHORIZED`, serta `/login` dengan HTTP 200. Server uji dihentikan sesudahnya; pengujian HTTP tersebut tidak menulis harga atau menjalankan cleanup.
+- Pada tahap verifikasi lokal ini, revisi belum dipush atau dideploy. Pengambilan harga nyata melalui sesi Admin pada deployment baru perlu diperiksa setelah publikasi kode.

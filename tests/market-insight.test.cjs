@@ -355,6 +355,7 @@ test('the main Admin action syncs all four latest types and cleans up only after
       global.fetch = async (url, options) => {
         calls.push({ url, body: options?.body ? JSON.parse(options.body) : null })
         if (url === '/api/market/sync-pihps') {
+          if (options?.method !== 'POST') return { ok: true, json: async () => ({ data: { tasks: pihps.PIHPS_PRICE_TYPES.map(type => ({ tanggal: pihps.jakartaToday(), price_type: type.id, mode: 'latest' })) } }) }
           if (scenario === 'cancelled') stopRef.current = true
           return { ok: scenario !== 'upstream-error', status: scenario === 'upstream-error' ? 502 : 200, json: async () => ({ data: { results: [{ date: '2026-10-20', status: scenario === 'upstream-error' ? 'error' : 'synced' }] } }) }
         }
@@ -369,7 +370,7 @@ test('the main Admin action syncs all four latest types and cleans up only after
       }
       find(AdminPage()).props.onClick()
       await new Promise(resolve => setImmediate(resolve))
-      const syncCalls = calls.filter(call => call.url === '/api/market/sync-pihps')
+      const syncCalls = calls.filter(call => call.url === '/api/market/sync-pihps' && call.body)
       assert.equal(syncCalls.length, scenario === 'cancelled' ? 1 : 4)
       assert.ok(syncCalls.every(call => call.body.mode === 'latest'))
       if (scenario !== 'cancelled') assert.deepEqual(syncCalls.map(call => call.body.price_type), [4,3,1,2])
@@ -509,9 +510,10 @@ test('expired Admin sessions stop the queue; HTML timeouts and network timeouts 
   try {
     for (const failure of ['session', 'html-timeout', 'network-timeout']) {
       let count = 0, cleaned = 0
-      global.fetch = async url => {
+      global.fetch = async (url, options) => {
         if (url === '/api/market/retention') { cleaned++; throw new Error('Unexpected cleanup') }
         if (url !== '/api/market/sync-pihps') return { ok: true, json: async () => ({ data: [] }) }
+        if (options?.method !== 'POST') return { ok: true, json: async () => ({ data: { tasks: pihps.PIHPS_PRICE_TYPES.map(type => ({ tanggal: pihps.jakartaToday(), price_type: type.id, mode: 'latest' })) } }) }
         count++
         if (failure === 'session') return { ok: false, status: 401, json: async () => ({ error: { message: 'Silakan masuk.' } }) }
         // A successful first write must not allow cleanup after a later failure.
@@ -524,6 +526,142 @@ test('expired Admin sessions stop the queue; HTML timeouts and network timeouts 
       assert.equal(count, failure === 'session' ? 1 : 4)
       assert.equal(cleaned, 0)
       assert.ok(run.states.some(state => Array.isArray(state.value) && state.value.some(row => row.status === 'error')))
+    }
+  } finally { global.fetch = original }
+})
+
+test('latest planning fills every missing date/type even behind a later observation, bounded to 60 days', () => {
+  const today = '2026-11-09'
+  const dates = pihps.calendarDates(today, 60)
+  const full = dates.flatMap(tanggal => pihps.PIHPS_PRICE_TYPES.map(type => ({ tanggal, price_type: type.id })))
+  const holes = new Set(['2026-11-08:4', '2026-11-08:3', '2026-11-08:1', '2026-11-08:2', '2026-10-14:2'])
+  const tasks = pihps.latestPihpsSyncTasks(full.filter(row => !holes.has(row.tanggal + ':' + row.price_type)), today)
+  assert.deepEqual(tasks.slice(0, 4).map(task => [task.tanggal, task.price_type, task.mode]), pihps.PIHPS_PRICE_TYPES.map(type => [today, type.id, 'latest']))
+  assert.deepEqual(new Set(tasks.slice(4).map(task => task.tanggal + ':' + task.price_type)), holes)
+  assert.ok(tasks.slice(4).every(task => task.mode === 'today'))
+  const empty = pihps.latestPihpsSyncTasks([], today)
+  assert.equal(empty.length, 240)
+  assert.equal(new Set(empty.map(task => task.tanggal + ':' + task.price_type)).size, 240)
+  assert.ok(empty.every(task => task.tanggal >= dates[0] && task.tanggal <= today))
+  assert.equal(pihps.latestPihpsSyncTasks(full, today).length, 4)
+})
+
+function planSetup({ user = true, role = 'admin', profileError = null, pages = [], readError = null } = {}) {
+  const calls = []
+  const client = {
+    auth: { getUser: async () => ({ data: { user: user ? { id: 'admin-test' } : null } }) },
+    from: table => {
+      calls.push({ table })
+      const chain = {}
+      for (const method of ['select', 'eq', 'gt', 'gte', 'lte', 'order']) chain[method] = (...args) => { calls.push({ method, args }); return chain }
+      chain.single = async () => ({ data: { role }, error: profileError })
+      chain.range = async (...args) => { calls.push({ method: 'range', args }); return { data: pages.shift() || [], error: readError } }
+      return chain
+    },
+  }
+  const route = load('src/app/api/market/sync-pihps/route.ts', { 'next/server': responseMock, '@/lib/supabase/server': { createClient: async () => client }, '@/lib/market/pihps': pihps })
+  return { calls, route, client }
+}
+
+test('planning is Admin-only, read-only and fails closed if coverage cannot be read', async () => {
+  for (const [options, status] of [[{ user: false }, 401], [{ role: 'petani' }, 403], [{ profileError: {} }, 403], [{ readError: {} }, 500]]) {
+    const { route, calls } = planSetup(options)
+    const result = await route.GET()
+    assert.equal(result.status, status)
+    assert.equal(result.body.data, null)
+    if (status !== 500) assert.ok(!calls.some(call => call.table === 'market_regional_price'))
+  }
+})
+
+test('planning paginates regional coverage past 1000 rows before deciding which dates are missing', async () => {
+  const today = pihps.jakartaToday(), dates = pihps.calendarDates(today, 60)
+  const hole = dates[30] + ':2'
+  const records = dates.flatMap(tanggal => pihps.PIHPS_PRICE_TYPES.flatMap(type =>
+    tanggal + ':' + type.id === hole ? [] : Array.from({ length: 6 }, () => ({ tanggal, price_type: type.id }))))
+  const { route, calls } = planSetup({ pages: [records.slice(0, 1000), records.slice(1000)] })
+  const response = await route.GET()
+  assert.equal(response.status, 200)
+  assert.match(response.headers['Cache-Control'], /no-store/)
+  assert.deepEqual(calls.filter(call => call.method === 'range').map(call => call.args), [[0, 999], [1000, 1999]])
+  assert.deepEqual(response.body.data.tasks.slice(4), [{ tanggal: dates[30], price_type: 2, mode: 'today' }])
+  assert.ok(calls.some(call => call.method === 'gte' && call.args[1] === dates[0]))
+  assert.ok(calls.some(call => call.method === 'lte' && call.args[1] === today))
+})
+
+test('one latest click refreshes today then fills missed days; the next click skips recovered dates', { timeout: 5000 }, async () => {
+  const original = global.fetch
+  const today = pihps.jakartaToday(), dates = pihps.calendarDates(today, 60)
+  const gaps = new Set(dates.slice(-3, -1).flatMap(date => pihps.PIHPS_PRICE_TYPES.map(type => date + ':' + type.id)))
+  gaps.add(dates[20] + ':2')
+  const stored = new Set(dates.flatMap(date => pihps.PIHPS_PRICE_TYPES.map(type => date + ':' + type.id)).filter(key => !gaps.has(key)))
+  const tasks = []
+  const writes = []
+  const client = planSetup().client
+  client.rpc = async (name, args) => {
+    writes.push({ name, args })
+    if (name === 'upsert_scraped_regional_price') for (const record of args.p_records) stored.add(record.tanggal + ':' + record.price_type)
+    return { error: null }
+  }
+  const syncRoute = load('src/app/api/market/sync-pihps/route.ts', { 'next/server': responseMock, '@/lib/supabase/server': { createClient: async () => client }, '@/lib/market/pihps': pihps })
+  let active = 0, peak = 0, cleaned = 0
+  global.fetch = async (url, options) => {
+    if (String(url).startsWith('https://www.bi.go.id/')) {
+      const params = new URL(url).searchParams
+      const date = dates.find(date => pihps.formatPihpsDate(date) === params.get('tanggal'))
+      assert.ok(date, 'PIHPS request must stay inside retention')
+      return { ok: true, json: async () => ({ data: [row({ Tanggal: date, Nilai: 15000 + Number(params.get('priceType')) })] }) }
+    }
+    if (url === '/api/market/sync-pihps' && options?.method !== 'POST') {
+      const records = [...stored].map(key => { const [tanggal, type] = key.split(':'); return { tanggal, price_type: Number(type) } })
+      const response = await planSetup({ pages: [records] }).route.GET()
+      return { ok: response.status === 200, json: async () => response.body }
+    }
+    if (url === '/api/market/sync-pihps') {
+      const body = JSON.parse(options.body)
+      active++; peak = Math.max(peak, active)
+      await new Promise(resolve => setImmediate(resolve))
+      active--
+      tasks.push(body)
+      const result = await syncRoute.POST(req(body))
+      return { ok: result.status === 200, status: result.status, json: async () => result.body }
+    }
+    if (url === '/api/market/retention') { cleaned++; return { ok: true, json: async () => ({ data: {} }) } }
+    return { ok: true, json: async () => ({ data: [] }) }
+  }
+  try {
+    await adminRun('Sinkronisasi harga terbaru').finished
+    assert.equal(tasks.length, 4 + gaps.size)
+    assert.equal(peak, 1)
+    assert.equal(cleaned, 1)
+    assert.deepEqual(new Set(tasks.slice(4).map(task => task.tanggal + ':' + task.price_type)), gaps)
+    assert.equal(writes.filter(write => write.name === 'upsert_scraped_regional_price').length, tasks.length)
+    assert.ok(writes.filter(write => write.name === 'upsert_scraped_regional_price').every(write => write.args.p_records[0].komoditas === pihps.PIHPS_COMMODITY))
+    tasks.length = 0
+    await adminRun('Sinkronisasi harga terbaru').finished
+    assert.equal(tasks.length, 4)
+    assert.ok(tasks.every(task => task.mode === 'latest'))
+    assert.equal(cleaned, 2)
+  } finally { global.fetch = original }
+})
+
+test('an unavailable or invalid automatic plan never starts writes or retention', { timeout: 5000 }, async () => {
+  const original = global.fetch
+  try {
+    for (const failure of ['database', 'html', 'network', 'empty']) {
+      const calls = []
+      global.fetch = async (url, options) => {
+        calls.push({ url, method: options?.method })
+        if (url !== '/api/market/sync-pihps') return { ok: true, json: async () => ({ data: [] }) }
+        if (failure === 'network') throw new DOMException('Timeout', 'TimeoutError')
+        return { ok: failure === 'empty', json: async () => {
+          if (failure === 'html') throw new SyntaxError('HTML timeout')
+          return { data: failure === 'empty' ? { tasks: [] } : null, error: failure === 'database' ? { message: 'Coverage unavailable' } : null }
+        } }
+      }
+      const run = adminRun('Sinkronisasi harga terbaru')
+      await run.finished
+      assert.ok(calls.every(call => call.method !== 'POST'))
+      assert.ok(run.states.some(state => state.index === 7 && typeof state.value === 'string' && state.value.length > 0))
     }
   } finally { global.fetch = original }
 })
