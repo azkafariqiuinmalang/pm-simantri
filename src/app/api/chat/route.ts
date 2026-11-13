@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { chatLanguageInstruction, normalizeLanguage } from '@/lib/i18n'
+import { chatLanguageInstruction, normalizeLanguage, translate } from '@/lib/i18n'
+import type { ChatAnswerMode } from '@/lib/chat/response'
 import {
   validateUserInput,
   detectPromptInjection,
@@ -20,6 +21,12 @@ interface KnowledgeEntryMatch {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ data: null, error: { message: 'Silakan masuk kembali untuk menggunakan SIMA.', code: 'UNAUTHORIZED' } }, { status: 401 })
+    }
+
     const body = await req.json().catch(() => ({}))
     const language = normalizeLanguage(body?.language)
 
@@ -51,10 +58,8 @@ export async function POST(req: NextRequest) {
       
       // Log blocked injection attempts for audit trail
       try {
-        const supabase = await createClient()
-        const { data: { user } } = await supabase.auth.getUser()
         await supabase.from('chat_logs').insert({
-          user_id: user?.id ?? null,
+          user_id: user.id,
           message: userMessage,
           response: `[BLOCKED_BY_GUARDRAIL] ${refusal}`,
         })
@@ -68,6 +73,7 @@ export async function POST(req: NextRequest) {
           response: refusal,
           sumber: [],
           dari_kb: false,
+          answer_mode: 'blocked',
           security: {
             status: 'blocked',
             risk_level: injectionAnalysis.riskLevel,
@@ -78,15 +84,11 @@ export async function POST(req: NextRequest) {
         response: refusal,
         sumber: [],
         dari_kb: false,
+        answer_mode: 'blocked',
         chat_id: null,
         error: null,
       })
     }
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
 
     // -------------------------------------------------------------------------
     // Retrieval (Ambil konteks dari knowledge_entries)
@@ -99,165 +101,104 @@ export async function POST(req: NextRequest) {
       'halo', 'selamat', 'pagi', 'siang', 'sore', 'malam', 'ya', 'tidak', 'dong',
       'awal', 'akhir', 'buka', 'usaha', 'modal', 'kiloan', 'berapa', 'mana', 'lebih',
       'sangat', 'baik', 'punya', 'ada', 'lagi', 'saja', 'juga', 'akan', 'sudah',
-      'oleh', 'atas', 'bawah', 'saat', 'dalam', 'luar', 'lain', 'kami', 'kita'
+      'oleh', 'atas', 'bawah', 'saat', 'dalam', 'luar', 'lain', 'kami',
+      'gejala', 'penyakit', 'bawang', 'merah', 'jenis', 'daerah', 'wilayah', 'ciri'
     ])
 
-    const meaningfulWords = userMessage
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter((w: string) => w.length >= 3 && !STOPWORDS.has(w))
+    const meaningfulWords = [...new Set(userMessage.toLowerCase().match(/[a-z0-9]{3,}/g) || [])]
+      .filter(word => !STOPWORDS.has(word))
 
-    const retrievedDocs: KnowledgeEntryMatch[] = []
+    const retrievedDocs = new Map<string, KnowledgeEntryMatch>()
+    let retrievalFailed = false
 
-    // Pendekatan 1: Full-Text Search di kolom content / summary
-    try {
-      const { data: ftsData } = await supabase
-        .from('knowledge_entries')
-        .select('doc_id, title, summary, content, keywords')
-        .eq('status', 'published')
-        .textSearch('content', userMessage, { type: 'websearch', config: 'simple' })
-        .limit(3)
-
-      if (ftsData && ftsData.length > 0) {
-        retrievedDocs.push(...(ftsData as KnowledgeEntryMatch[]))
+    function collect(result: { data: KnowledgeEntryMatch[] | null; error: unknown }, partial = false) {
+      if (result.error) {
+        retrievalFailed = true
+        return
       }
-    } catch {
-      // Fallback silently
+
+      for (const doc of result.data ?? []) {
+        if (retrievedDocs.size >= 3) break
+        if (partial) {
+          // A generic match such as "tanah" cannot answer a location-specific question on its own.
+          const terms = new Set([doc.title, doc.summary, doc.content, ...(doc.keywords ?? [])]
+            .join(' ').toLowerCase().match(/[a-z0-9]{3,}/g) || [])
+          if (!meaningfulWords.every(word => terms.has(word))) continue
+        }
+        if (!retrievedDocs.has(doc.doc_id)) retrievedDocs.set(doc.doc_id, doc)
+      }
     }
 
-    // Pendekatan 2: Keyword matching / overlaps di kolom keywords
-    if (retrievedDocs.length < 3 && meaningfulWords.length > 0) {
+    if (meaningfulWords.length) {
+      const query = () => supabase.from('knowledge_entries').select('doc_id, title, summary, content, keywords').eq('status', 'published')
       try {
-        const { data: kwData } = await supabase
-          .from('knowledge_entries')
-          .select('doc_id, title, summary, content, keywords')
-          .eq('status', 'published')
-          .overlaps('keywords', meaningfulWords)
-          .limit(3)
-
-        if (kwData && kwData.length > 0) {
-          retrievedDocs.push(...(kwData as KnowledgeEntryMatch[]))
+        collect(await query().textSearch('content', meaningfulWords.join(' '), { type: 'plain', config: 'simple' }).limit(3))
+        if (retrievedDocs.size < 3) collect(await query().overlaps('keywords', meaningfulWords).limit(12), true)
+        if (!retrievedDocs.size) {
+          for (const word of meaningfulWords.slice(0, 3)) {
+            collect(await query().or(`title.ilike.%${word}%,topic.ilike.%${word}%`).limit(6), true)
+            if (retrievedDocs.size >= 3) break
+          }
         }
       } catch {
-        // Fallback silently
+        retrievalFailed = true
       }
     }
 
-    // Pendekatan 3: Exact title/topic matching jika keyword khusus (bawang, varietas, pupuk, hama, moler, tanah, dll)
-    if (retrievedDocs.length === 0 && meaningfulWords.length > 0) {
-      for (const w of meaningfulWords.slice(0, 3)) {
-        const { data: ilikeData } = await supabase
-          .from('knowledge_entries')
-          .select('doc_id, title, summary, content, keywords')
-          .eq('status', 'published')
-          .or(`title.ilike.%${w}%,topic.ilike.%${w}%`)
-          .limit(2)
-
-        if (ilikeData && ilikeData.length > 0) {
-          retrievedDocs.push(...(ilikeData as KnowledgeEntryMatch[]))
-        }
-      }
-    }
-
-    // Deduplikasi berdasarkan doc_id, ambil maksimal 3 entri terbaik
-    const uniqueDocsMap = new Map<string, KnowledgeEntryMatch>()
-    for (const doc of retrievedDocs) {
-      if (!uniqueDocsMap.has(doc.doc_id)) {
-        uniqueDocsMap.set(doc.doc_id, doc)
-      }
-      if (uniqueDocsMap.size >= 3) break
-    }
-    const finalDocs = Array.from(uniqueDocsMap.values())
-
-    const dariKb = finalDocs.length > 0
-    const sumber = finalDocs.map((d) => ({
-      doc_id: d.doc_id,
-      title: d.title,
-    }))
-
-    // -------------------------------------------------------------------------
-    // LAYER 3 & 4: PROMPT ISOLATION & SYSTEM PROMPT PROTECTION
-    // -------------------------------------------------------------------------
-    const contextString = dariKb
-      ? finalDocs
-          .map(
-            (d) =>
-              `--- DOKUMEN: [${d.doc_id}] ${d.title} ---\nRINGKASAN: ${d.summary || '-'}\nISI PENGETAHUAN:\n${d.content.slice(0, 3500)}`
-          )
-          .join('\n\n')
-      : 'Tidak ada dokumen spesifik yang ditemukan di Knowledge Base untuk kueri ini.'
-
-    const weatherString =
-      'Kabupaten Nganjuk, Jawa Timur. Iklim tropis monsun dengan suhu rata-rata 25-32°C, kelembaban udara 65-85%, sentra utama budidaya bawang merah dataran rendah (6-80 mdpl).'
-
-    const systemPrompt = buildSecureSystemPrompt(
-      contextString,
-      weatherString,
-      injectionAnalysis.riskLevel
-    ) + chatLanguageInstruction(language)
-
-    const isolatedUserPrompt = encapsulateUserPrompt(userMessage)
-
-    // -------------------------------------------------------------------------
-    // Generation (Panggil Gemini API Server-Side)
-    // -------------------------------------------------------------------------
-    let rawAiResponse = ''
-    const apiKey = process.env.GEMINI_API_KEY
-
-    if (!apiKey) {
-      if (dariKb) {
-        rawAiResponse = `${
-          finalDocs[0]?.summary || finalDocs[0]?.content.slice(0, 400)
-        }${language === 'jv' ? '\n\nRujukan ing basa aslinipun kasebat ing nginggil.\n\nPamrayogi:\n- Mangga dipunpriksa kawontenan sabin saha drainase supados nyekapi.\n- Mangga konsultasi kaliyan penyuluh tetanèn setempat.' : '\n\nSaran:\n- Silakan pastikan kondisi lahan dan drainase memadai.\n- Konsultasikan dengan penyuluh pertanian setempat.'}`
-      } else {
-        rawAiResponse = language === 'jv'
-          ? `Sugeng rawuh! Pitaken panjenengan bab "${userMessage}" sapunika dereng kacathet kanthi khusus ing basis data lokal SIMANTRI. Kangge budidaya brambang, mangga dipunpriksa kelembapan lemah, drainase, saha rotasi tanduran.\n\nPamrayogi:\n- Priksa kawontenan nyata ing sabin.\n- Hubungi PPL / Penyuluh tetanèn paling caket.`
-          : `Halo! Pertanyaan Anda terkait "${userMessage}" saat ini belum tercakup spesifik dalam basis data lokal SIMANTRI. Namun secara umum untuk budidaya bawang merah, disarankan memperhatikan kelembaban tanah, drainase, dan rotasi tanaman.\n\nSaran:\n- Periksa kondisi riil di lahan sawah.\n- Hubungi PPL / Penyuluh pertanian terdekat.`
-      }
+    const finalDocs = [...retrievedDocs.values()]
+    const firstDoc = finalDocs[0]
+    let rawAiResponse: string
+    let answerMode: ChatAnswerMode
+    if (!firstDoc) {
+      answerMode = retrievalFailed ? 'retrieval_unavailable' : 'no_reference'
+      rawAiResponse = retrievalFailed
+        ? translate('Pencarian di Knowledge Base sedang terganggu. Silakan coba lagi.', language)
+        : translate('SIMA belum menemukan rujukan yang sesuai di Knowledge Base. Coba perjelas gejala, varietas, atau kondisi lahan yang ingin ditanyakan.', language)
     } else {
-      const CANDIDATE_MODELS = [
-        'gemini-3.5-flash-lite',
-        'gemini-3.1-flash-lite',
-        'gemini-flash-lite-latest',
-        'gemini-3.8-flash',
-        'gemini-3.6-flash',
-        'gemini-3.7-flash',
-      ]
+      answerMode = 'fallback'
+      rawAiResponse = firstDoc.summary?.trim() || firstDoc.content.slice(0, 500)
+      const apiKey = process.env.GEMINI_API_KEY
+      if (apiKey) {
+        const context = finalDocs.map(doc => [
+          `--- DOKUMEN: [${doc.doc_id}] ${doc.title} ---`,
+          `RINGKASAN: ${doc.summary || '-'}`,
+          `ISI PENGETAHUAN:\n${doc.content.slice(0, 3500)}`,
+        ].join('\n')).join('\n\n')
+        const weather = 'Kabupaten Nganjuk, Jawa Timur. Iklim tropis monsun dengan suhu rata-rata 25-32°C, kelembaban udara 65-85%, sentra utama budidaya bawang merah dataran rendah (6-80 mdpl).'
+        const systemPrompt = buildSecureSystemPrompt(context, weather, injectionAnalysis.riskLevel) + chatLanguageInstruction(language)
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const candidateModels = [
+          'gemini-3.5-flash-lite',
+          'gemini-3.1-flash-lite',
+          'gemini-flash-lite-latest',
+          'gemini-3.8-flash',
+          'gemini-3.6-flash',
+          'gemini-3.7-flash',
+        ]
 
-      const genAI = new GoogleGenerativeAI(apiKey)
-      let generated = false
-
-      for (const modelName of CANDIDATE_MODELS) {
-        try {
-          const model = genAI.getGenerativeModel({ model: modelName })
-          const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: isolatedUserPrompt }] }],
-            systemInstruction: systemPrompt,
-          })
-          const text = result.response.text()
-          if (text && text.trim().length > 0) {
-            rawAiResponse = text.trim()
-            generated = true
-            break
+        for (const modelName of candidateModels) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName })
+            const result = await model.generateContent({
+              contents: [{ role: 'user', parts: [{ text: encapsulateUserPrompt(userMessage) }] }],
+              systemInstruction: systemPrompt,
+            })
+            const reply = result.response.text()?.trim()
+            if (reply) {
+              rawAiResponse = reply
+              answerMode = 'generated'
+              break
+            }
+          } catch {
+            console.warn(`SIMA: model ${modelName} tidak menghasilkan jawaban.`)
           }
-        } catch (modelErr) {
-          console.warn(`Model ${modelName} failed, trying next candidate:`, modelErr)
-        }
-      }
-
-      if (!generated) {
-        if (dariKb) {
-          rawAiResponse = `${
-            finalDocs[0]?.summary || finalDocs[0]?.content.slice(0, 500)
-          }${language === 'jv' ? '\n\nRujukan ing basa aslinipun kasebat ing nginggil.\n\nPamrayogi:\n- Selarasaken pola nandur kaliyan curah jawah setempat.\n- Mangga konsultasi kaliyan penyuluh BPP Nganjuk paling caket.' : '\n\nSaran:\n- Sesuaikan pola tanam dengan curah hujan setempat.\n- Konsultasikan dengan penyuluh BPP Nganjuk terdekat.'}`
-        } else {
-          rawAiResponse = language === 'jv'
-            ? `Sugeng rawuh! Bab "${userMessage}", ing budidaya brambang Nganjuk, mangga dipunpriksa drainase bedengan supados optimal saha kawontenan cuaca saderengipun pemupukan.\n\nPamrayogi:\n- Priksa kelembapan lemah sabin.\n- Hubungi Penyuluh Pertanian Lapangan (PPL) setempat.`
-            : `Halo! Mengenai "${userMessage}", secara umum dalam budidaya bawang merah Nganjuk, pastikan drainase bedengan dibuat optimal dan perhatikan kondisi cuaca sebelum pemupukan.\n\nSaran:\n- Cek kondisi kelembaban tanah lahan.\n- Hubungi Penyuluh Pertanian Lapangan (PPL) setempat.`
         }
       }
     }
+
+    const referenceDocs = answerMode === 'fallback' ? finalDocs.slice(0, 1) : finalDocs
+    const sumber = referenceDocs.map(({ doc_id, title }) => ({ doc_id, title }))
+    const dariKb = sumber.length > 0
 
     // -------------------------------------------------------------------------
     // LAYER 5: OUTPUT SECURITY & SENSITIVE INFORMATION REDACTION
@@ -273,7 +214,7 @@ export async function POST(req: NextRequest) {
       const { data: logData, error: logError } = await supabase
         .from('chat_logs')
         .insert({
-          user_id: user?.id ?? null,
+          user_id: user.id,
           message: userMessage,
           response: finalAiResponse,
         })
@@ -293,6 +234,7 @@ export async function POST(req: NextRequest) {
         response: finalAiResponse,
         sumber: sumber,
         dari_kb: dariKb,
+        answer_mode: answerMode,
         security: {
           status: 'cleared',
           risk_level: injectionAnalysis.riskLevel,
@@ -303,14 +245,14 @@ export async function POST(req: NextRequest) {
       response: finalAiResponse,
       sumber: sumber,
       dari_kb: dariKb,
+      answer_mode: answerMode,
       chat_id: logId,
       error: null,
     })
   } catch (error: unknown) {
     console.error('API /api/chat error:', error)
-    const msg = error instanceof Error ? error.message : 'Terjadi kesalahan internal server'
     return NextResponse.json(
-      { data: null, error: { message: msg, code: 'INTERNAL_ERROR' } },
+      { data: null, error: { message: 'Terjadi kesalahan internal server', code: 'INTERNAL_ERROR' } },
       { status: 500 }
     )
   }

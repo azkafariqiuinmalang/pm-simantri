@@ -23,6 +23,8 @@ import {
 } from 'lucide-react'
 import { Toast, useChatScroll, useOverlayFocus } from '@/components/ui/Experience'
 import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer'
+import { ChatAnswerDetails } from '@/components/ui/ChatAnswerDetails'
+import type { ChatAnswerMode, ChatSource } from '@/lib/chat/response'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
 
@@ -31,8 +33,9 @@ interface Message {
   sender: 'user' | 'sima'
   text: string
   requestText?: string
-  sumber?: { doc_id: string; title: string }[]
-  dari_kb?: boolean
+  sumber?: ChatSource[]
+  answerMode?: ChatAnswerMode
+  chatLogId?: string | null
   feedback?: 'helpful' | 'not_helpful' | null
   timestamp: string
 }
@@ -166,6 +169,10 @@ export default function ChatAssistantPage() {
         body: JSON.stringify({ message: textToSend, conversation_history: historyPayload, language }),
       })
 
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       if (!response.ok) throw new Error(`HTTP error ${response.status}`)
 
       const result = await response.json()
@@ -179,7 +186,8 @@ export default function ChatAssistantPage() {
         sender: 'sima',
         text: replyText,
         sumber: result.sumber || result.data?.sumber || [],
-        dari_kb: result.dari_kb ?? result.data?.dari_kb ?? false,
+        answerMode: result.answer_mode ?? result.data?.answer_mode,
+        chatLogId: result.chat_id ?? result.data?.id,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages((prev) => [...prev, simaMsg])
@@ -203,7 +211,7 @@ export default function ChatAssistantPage() {
     if (!chatId || feedbackSending) return
     setFeedbackSending(chatId)
     setMessages((prev) =>
-      prev.map((message) => (message.id === chatId ? { ...message, feedback: feedbackType } : message))
+      prev.map((message) => (message.chatLogId === chatId ? { ...message, feedback: feedbackType } : message))
     )
 
     try {
@@ -388,10 +396,6 @@ export default function ChatAssistantPage() {
                       <div className="flex items-center gap-2 px-1">
                         <span className="text-xs font-extrabold text-simantri-800 dark:text-[var(--theme-green)]">{t("SIMA Agronomi Nganjuk")}</span>
                         <span className="text-[10px] text-slate-400 dark:text-[var(--theme-muted)] font-medium">• {message.timestamp}</span>
-                        {message.dari_kb && (
-                          <span className="text-emerald-800 dark:text-[var(--theme-green)] text-[10px] font-medium">
-                            {t("Tervalidasi RAG BPTP")}</span>
-                        )}
                       </div>
                     )}
 
@@ -403,7 +407,10 @@ export default function ChatAssistantPage() {
                       }`}
                     >
                       {message.sender === 'sima' ? (
-                        <MarkdownRenderer content={message.text} />
+                        <>
+                          <ChatAnswerDetails mode={message.answerMode} sources={message.sumber} />
+                          <MarkdownRenderer content={message.text} />
+                        </>
                       ) : (
                         <div className="whitespace-pre-wrap [overflow-wrap:anywhere]">{message.text}</div>
                       )}
@@ -418,39 +425,41 @@ export default function ChatAssistantPage() {
                     {/* SIMA Action Bar & Feedback */}
                     {message.sender === 'sima' && message.id && (
                       <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-500 dark:text-[var(--theme-muted)] pt-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px]">{t("Bermanfaat?")}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleFeedback(message.id!, 'helpful')}
-                            aria-pressed={message.feedback === 'helpful'}
-                            aria-busy={feedbackSending === message.id}
-                            disabled={feedbackSending === message.id}
-                            className={`p-1.5 rounded-xl border transition ${
-                              message.feedback === 'helpful'
-                                ? 'border-emerald-300 dark:border-[var(--theme-green)] bg-emerald-50 dark:bg-[var(--theme-green-soft)] text-emerald-700 dark:text-[var(--theme-green)] font-bold'
-                                : 'border-slate-200 dark:border-[var(--theme-line)] hover:bg-slate-100 dark:hover:bg-[var(--theme-raised)] text-slate-600 dark:text-[var(--theme-body)]'
-                            }`}
-                            title={t("Jawaban membantu")}
-                          >
-                            <ThumbsUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleFeedback(message.id!, 'not_helpful')}
-                            aria-pressed={message.feedback === 'not_helpful'}
-                            aria-busy={feedbackSending === message.id}
-                            disabled={feedbackSending === message.id}
-                            className={`p-1.5 rounded-xl border transition ${
-                              message.feedback === 'not_helpful'
-                                ? 'border-rose-300 dark:border-[var(--theme-rose)] bg-rose-50 dark:bg-[var(--theme-rose-soft)] text-rose-700 dark:text-[var(--theme-rose)] font-bold'
-                                : 'border-slate-200 dark:border-[var(--theme-line)] hover:bg-slate-100 dark:hover:bg-[var(--theme-raised)] text-slate-600 dark:text-[var(--theme-body)]'
-                            }`}
-                            title={t("Kurang tepat")}
-                          >
-                            <ThumbsDown className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {message.chatLogId && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px]">{t("Bermanfaat?")}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleFeedback(message.chatLogId!, 'helpful')}
+                              aria-pressed={message.feedback === 'helpful'}
+                              aria-busy={feedbackSending === message.chatLogId}
+                              disabled={feedbackSending === message.chatLogId}
+                              className={`p-1.5 rounded-xl border transition ${
+                                message.feedback === 'helpful'
+                                  ? 'border-emerald-300 dark:border-[var(--theme-green)] bg-emerald-50 dark:bg-[var(--theme-green-soft)] text-emerald-700 dark:text-[var(--theme-green)] font-bold'
+                                  : 'border-slate-200 dark:border-[var(--theme-line)] hover:bg-slate-100 dark:hover:bg-[var(--theme-raised)] text-slate-600 dark:text-[var(--theme-body)]'
+                              }`}
+                              title={t("Jawaban membantu")}
+                            >
+                              <ThumbsUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleFeedback(message.chatLogId!, 'not_helpful')}
+                              aria-pressed={message.feedback === 'not_helpful'}
+                              aria-busy={feedbackSending === message.chatLogId}
+                              disabled={feedbackSending === message.chatLogId}
+                              className={`p-1.5 rounded-xl border transition ${
+                                message.feedback === 'not_helpful'
+                                  ? 'border-rose-300 dark:border-[var(--theme-rose)] bg-rose-50 dark:bg-[var(--theme-rose-soft)] text-rose-700 dark:text-[var(--theme-rose)] font-bold'
+                                  : 'border-slate-200 dark:border-[var(--theme-line)] hover:bg-slate-100 dark:hover:bg-[var(--theme-raised)] text-slate-600 dark:text-[var(--theme-body)]'
+                              }`}
+                              title={t("Kurang tepat")}
+                            >
+                              <ThumbsDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-1">
                           <button
@@ -539,7 +548,7 @@ export default function ChatAssistantPage() {
               <div className="flex items-center gap-1.5 truncate">
                 <Info className="w-3.5 h-3.5 text-simantri-600 dark:text-[var(--theme-green)] shrink-0" />
                 <span className="truncate">
-                  {t("Rekomendasi diselaraskan dengan SOP BPTP Jatim & Pasar Sukomoro Nganjuk.")}</span>
+                  {t("SIMA menggunakan rujukan Knowledge Base SIMANTRI.")}</span>
               </div>
               <span className="hidden sm:inline font-mono text-[10px] text-slate-400 dark:text-[var(--theme-muted)] shrink-0">
                 {t("Shift + Enter untuk baris baru")}</span>

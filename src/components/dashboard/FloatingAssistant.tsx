@@ -3,7 +3,7 @@
 import { useLanguage } from '@/components/ui/LanguageProvider'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   X,
@@ -18,6 +18,8 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer'
+import { ChatAnswerDetails } from '@/components/ui/ChatAnswerDetails'
+import type { ChatAnswerMode, ChatSource } from '@/lib/chat/response'
 import { Toast, useChatScroll } from '@/components/ui/Experience'
 import { SimaMascot } from '@/components/dashboard/SimaMascot'
 
@@ -26,6 +28,8 @@ interface Message {
   sender: 'user' | 'sima'
   text: string
   requestText?: string
+  sumber?: ChatSource[]
+  answerMode?: ChatAnswerMode
   timestamp: string
   feedback?: 'helpful' | 'not_helpful' | null
 }
@@ -48,6 +52,7 @@ export function openSimaAssistant(options?: { prompt?: string; autoSend?: boolea
 export default function FloatingAssistant({ quiet = false }: { quiet?: boolean } = {}) {
   const { t, language } = useLanguage()
   const pathname = usePathname()
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isBubbleDismissed, setIsBubbleDismissed] = useState(false)
@@ -120,6 +125,10 @@ export default function FloatingAssistant({ quiet = false }: { quiet?: boolean }
         }),
       })
 
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       if (!response.ok) throw new Error(`HTTP error ${response.status}`)
 
       const result = await response.json()
@@ -133,9 +142,11 @@ export default function FloatingAssistant({ quiet = false }: { quiet?: boolean }
         'Jawaban tidak dapat dimuat.'
 
       const simaMsg: Message = {
-        id: result.chat_id || result.data?.id || `msg-${Date.now()}`,
+        id: result.chat_id ?? result.data?.id,
         sender: 'sima',
         text: replyText,
+        sumber: result.sumber ?? result.data?.sumber,
+        answerMode: result.answer_mode ?? result.data?.answer_mode,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       }
 
@@ -151,7 +162,7 @@ export default function FloatingAssistant({ quiet = false }: { quiet?: boolean }
     } finally {
       setLoading(false)
     }
-  }, [inputMessage, loading, messages, language, t])
+  }, [inputMessage, loading, messages, language, router, t])
 
   // Handle global event listener for cross-page trigger
   useEffect(() => {
@@ -457,7 +468,10 @@ export default function FloatingAssistant({ quiet = false }: { quiet?: boolean }
                           )}
 
                           {msg.sender === 'sima' ? (
-                            <MarkdownRenderer content={msg.text} />
+                            <>
+                              <ChatAnswerDetails mode={msg.answerMode} sources={msg.sumber} />
+                              <MarkdownRenderer content={msg.text} />
+                            </>
                           ) : (
                             <div className="whitespace-pre-wrap">{msg.text}</div>
                           )}

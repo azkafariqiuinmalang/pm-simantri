@@ -27,8 +27,10 @@ test('decorative model, version and connectivity badges are absent', () => {
 })
 
 test('functional controls, contextual answer provenance and retained landing controls remain', () => {
-  assert.match(source('src/app/dashboard/chat/page.tsx'), /message\.dari_kb &&/)
-  assert.match(source('src/app/dashboard/chat/page.tsx'), /Tervalidasi RAG BPTP/)
+  assert.match(source('src/app/dashboard/chat/page.tsx'), /<ChatAnswerDetails mode=\{message\.answerMode\} sources=\{message\.sumber\}/)
+  assert.match(source('src/components/dashboard/FloatingAssistant.tsx'), /<ChatAnswerDetails mode=\{msg\.answerMode\} sources=\{msg\.sumber\}/)
+  assert.match(source('src/components/ui/ChatAnswerDetails.tsx'), /source\.title/)
+  assert.doesNotMatch(source('src/app/dashboard/chat/page.tsx'), /Tervalidasi RAG BPTP/)
   assert.match(source('src/app/dashboard/penyakit/page.tsx'), /DiseaseCatalogue/)
   assert.match(source('src/components/diseases/DiseaseCatalogue.tsx'), /Tidak ada unggah foto/)
   assert.match(source('src/app/page.tsx'), /carousel-card-img/)
