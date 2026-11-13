@@ -21,8 +21,8 @@ const entries = seeds.map(({ disease, ...row }, i) => ({ ...row, id: `00000000-0
 const current = entries[0]
 const valid = { id: current.id, updated_at: current.updated_at, title: current.title, summary: current.summary, symptoms: current.metadata.disease.symptoms, prevention: current.metadata.disease.prevention, first_steps: current.metadata.disease.first_steps, status: 'published' }
 
-test('four official-source entries validate without claiming photo ownership or expert review', () => {
-  assert.equal(entries.length, 4)
+test('five official-source entries validate without claiming photo ownership or expert review', () => {
+  assert.equal(entries.length, 5)
   for (const row of entries) {
     assert.ok(lib.isDiseaseEntry(row))
     assert.match(row.content, /belum divalidasi ahli/)
@@ -36,7 +36,8 @@ test('search matches names, aliases and symptoms; part filters combine and reset
   assert.equal(lib.filterDiseases(entries, 'pangkal', 'Akar & umbi').length, 1)
   assert.equal(lib.filterDiseases(entries, 'otomatis', 'Akar & umbi').length, 0)
   assert.equal(lib.filterDiseases(entries, 'tidak-ada').length, 0)
-  assert.equal(lib.filterDiseases(entries, '').length, 4)
+  assert.equal(lib.filterDiseases(entries, '').length, 5)
+  assert.deepEqual(lib.filterDiseases(entries, 'ngelumpruk', 'Daun').map(row => row.doc_id), ['PM-DISEASE-STEMPHYLIUM-001'])
 })
 test('source URLs reject unsafe schemes, impostor hosts and credentials', () => {
   for (const url of ['javascript:alert(1)', 'data:text/html,x', 'http://repository.pertanian.go.id/a', 'https://repository.pertanian.go.id.evil.test', 'https://user@repository.pertanian.go.id/a', '/local.jpg']) assert.equal(lib.officialSourceUrl(url), null)

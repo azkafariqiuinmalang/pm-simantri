@@ -10,7 +10,11 @@ instance.filename = filename
 instance.paths = Module._nodeModulePaths(path.dirname(filename))
 instance._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, filename)
 const { diseaseContent, DISEASE_CATALOGUE } = instance.exports
-const rows = JSON.parse(fs.readFileSync(path.join(root, 'data/pm-diseases.json'), 'utf8')).map(({ disease, ...item }) => ({
+const entries = JSON.parse(fs.readFileSync(path.join(root, 'data/pm-diseases.json'), 'utf8'))
+const docId = process.argv[2]
+const selected = docId ? entries.filter(item => item.doc_id === docId) : entries
+if (!selected.length) throw new Error('Doc ID katalog tidak ditemukan.')
+const rows = selected.map(({ disease, ...item }) => ({
   ...item, content: diseaseContent(item.title, item.summary, disease),
   metadata: { catalogue: DISEASE_CATALOGUE, disease },
   keywords: [item.title, ...disease.aliases, disease.scientific_name],

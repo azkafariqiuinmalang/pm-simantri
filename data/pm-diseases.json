@@ -68,5 +68,24 @@
       "sources": [{"title": "Pengenalan hama dan penyakit pada tanaman bawang merah dan pengendaliannya · embun bulu", "publisher": "Udiarto, Setiawati & Suryaningsih, Balai Penelitian Tanaman Sayuran", "year": "2005", "url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=27"}],
       "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=28", "label": "Gambar 11 · halaman tercetak 18 (PDF 28)", "credit": "Sherf, dalam Udiarto, Setiawati & Suryaningsih, Balitsa (2005). Izin penggunaan ulang belum dikonfirmasi."}
     }
+  },
+  {
+    "doc_id": "PM-DISEASE-STEMPHYLIUM-001",
+    "title": "Hawar daun Stemphylium",
+    "summary": "Bercak pucat pada daun dapat melebar dan menyatu hingga bagian yang rusak berwarna cokelat tua atau kehitaman.",
+    "disease": {
+      "scientific_name": "Stemphylium vesicarium",
+      "aliases": ["stemphylium", "ngelumpruk", "leumpeuh", "hawar daun stemphylium"],
+      "parts": ["Daun"],
+      "symptoms": ["Amati bercak awal berwarna kuning muda atau cokelat muda pada daun.", "Bercak yang meluas dapat menyatu. Bagian yang rusak dapat menggelap dan membusuk.", "Pada tanaman yang sedang berbunga, tangkai bunga yang terserang dapat mengering dan terkulai."],
+      "prevention": ["Pilih bahan tanam yang sehat dan singkirkan sisa tanaman sakit dari lahan.", "Pantau daun lebih sering ketika tajuk lama lembap atau banyak embun.", "Pada pertanaman untuk benih biji, periksa daun dan tangkai bunga sejak awal pembungaan."],
+      "first_steps": ["Catat letak dan perkembangan bercak pada beberapa tanaman.", "Jika tanaman berbunga, periksa tangkai bunga yang mengering atau terkulai.", "Tunjukkan foto dan catatan perkembangan gejala kepada POPT atau penyuluh sebelum memilih tindakan pengendalian."],
+      "confused_with": "Hawar Stemphylium dapat muncul bersama bercak ungu. Warna bercak yang menggelap saja belum cukup untuk membedakan keduanya.",
+      "sources": [
+        {"title": "Benih Biji Bawang Merah di Indonesia · bagian 6.2.5 dan 6.4", "publisher": "Rosliani dkk., IAARD Press, Kementerian Pertanian", "year": "2022", "url": "https://repository.pertanian.go.id/server/api/core/bitstreams/4a250672-f833-42cc-83d5-35327f1d5e3e/content"},
+        {"title": "Pengenalan Hama dan Penyakit pada Tanaman Bawang Merah dan Pengendaliannya · bagian 2.2.5", "publisher": "Udiarto, Setiawati & Suryaningsih, Balai Penelitian Tanaman Sayuran", "year": "2005", "url": "https://repository.pertanian.go.id/server/api/core/bitstreams/2cae6926-4681-4cfc-b1dc-2219b18c474d/content#page=29"}
+      ],
+      "photo_reference": {"url": "https://repository.pertanian.go.id/server/api/core/bitstreams/4a250672-f833-42cc-83d5-35327f1d5e3e/content", "label": "Gambar 31 · halaman tercetak 93 · gejala pada tangkai bunga", "credit": "Sulastrini (2020), dikutip dalam Rosliani dkk. (2022). Izin penggunaan ulang belum dikonfirmasi."}
+    }
   }
 ]
