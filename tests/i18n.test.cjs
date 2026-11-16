@@ -117,7 +117,10 @@ test('Chat locale reaches the system instruction, not the retrieval query or res
   const writes = []
   const reference = { doc_id: 'moler', title: 'Moler bawang merah', summary: 'Ringkasan moler.', content: 'Daun melintir karena moler.', keywords: ['moler'] }
   let user = { id: 'unit-test-user' }
-  let docs = [reference]
+  let docs = [
+    { ...reference, doc_id: 'hama', title: 'Ulat tanah', summary: 'Cara mengamati ulat tanah.', content: 'Bedakan dengan moler.', keywords: ['ulat tanah'] },
+    reference,
+  ]
   let partialDocs = []
   let retrievalError = null
   let modelFails = false
@@ -194,6 +197,7 @@ test('Chat locale reaches the system instruction, not the retrieval query or res
     assert.match(noReference.body.reply, /dereng manggihaken rujukan/)
 
     partialDocs = [{ ...reference, title: 'Jenis tanah di Nganjuk', content: 'Tanah di Nganjuk.', keywords: ['tanah'] }]
+    docs = [{ ...reference, doc_id: 'musim', title: 'Fase Raya di Nganjuk', summary: 'Panduan musim tanam.', content: 'Persiapan tanah. Jombang disebut sebagai daerah sekitar.', keywords: ['musim tanam'] }]
     const wrongRegion = await route.POST({ json: async () => ({ message: 'Apa jenis tanah di daerah Jombang?' }) })
     assert.equal(queries.at(-1), 'tanah jombang')
     assert.equal(wrongRegion.body.answer_mode, 'no_reference')

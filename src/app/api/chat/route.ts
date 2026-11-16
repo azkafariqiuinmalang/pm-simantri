@@ -17,6 +17,7 @@ interface KnowledgeEntryMatch {
   summary: string | null
   content: string
   keywords: string[] | null
+  metadata?: { catalogue?: string } | null
 }
 
 export async function POST(req: NextRequest) {
@@ -108,35 +109,40 @@ export async function POST(req: NextRequest) {
     const meaningfulWords = [...new Set(userMessage.toLowerCase().match(/[a-z0-9]{3,}/g) || [])]
       .filter(word => !STOPWORDS.has(word))
 
-    const retrievedDocs = new Map<string, KnowledgeEntryMatch>()
+    const retrievedDocs = new Map<string, { doc: KnowledgeEntryMatch; titleMatches: number }>()
     let retrievalFailed = false
 
-    function collect(result: { data: KnowledgeEntryMatch[] | null; error: unknown }, partial = false) {
+    function collect(result: { data: KnowledgeEntryMatch[] | null; error: unknown }) {
       if (result.error) {
         retrievalFailed = true
         return
       }
 
       for (const doc of result.data ?? []) {
-        if (retrievedDocs.size >= 3) break
-        if (partial) {
-          // A generic match such as "tanah" cannot answer a location-specific question on its own.
-          const terms = new Set([doc.title, doc.summary, doc.content, ...(doc.keywords ?? [])]
-            .join(' ').toLowerCase().match(/[a-z0-9]{3,}/g) || [])
-          if (!meaningfulWords.every(word => terms.has(word))) continue
-        }
-        if (!retrievedDocs.has(doc.doc_id)) retrievedDocs.set(doc.doc_id, doc)
+        const titleTerms = new Set(doc.title.toLowerCase().match(/[a-z0-9]{3,}/g) || [])
+        const topicTerms = new Set([doc.title, doc.summary, ...(doc.keywords ?? [])]
+          .join(' ').toLowerCase().match(/[a-z0-9]{3,}/g) || [])
+        const contextTerms = new Set([doc.content.slice(0, 3500), ...topicTerms]
+          .join(' ').toLowerCase().match(/[a-z0-9]{3,}/g) || [])
+        // For short questions, every term must match the document's stated topic.
+        // Full-text hits may merely mention the words in unrelated sections.
+        const matchesTopic = meaningfulWords.length <= 2
+          ? meaningfulWords.every(word => topicTerms.has(word))
+          : meaningfulWords.some(word => topicTerms.has(word))
+        if (!matchesTopic || !meaningfulWords.every(word => contextTerms.has(word))) continue
+        const titleMatches = meaningfulWords.filter(word => titleTerms.has(word)).length
+        retrievedDocs.set(doc.doc_id, { doc, titleMatches })
       }
     }
 
     if (meaningfulWords.length) {
-      const query = () => supabase.from('knowledge_entries').select('doc_id, title, summary, content, keywords').eq('status', 'published')
+      const query = () => supabase.from('knowledge_entries').select('doc_id, title, summary, content, keywords, metadata').eq('status', 'published')
       try {
-        collect(await query().textSearch('content', meaningfulWords.join(' '), { type: 'plain', config: 'simple' }).limit(3))
-        if (retrievedDocs.size < 3) collect(await query().overlaps('keywords', meaningfulWords).limit(12), true)
+        collect(await query().textSearch('content', meaningfulWords.join(' '), { type: 'plain', config: 'simple' }).limit(12))
+        collect(await query().overlaps('keywords', meaningfulWords).limit(12))
         if (!retrievedDocs.size) {
           for (const word of meaningfulWords.slice(0, 3)) {
-            collect(await query().or(`title.ilike.%${word}%,topic.ilike.%${word}%`).limit(6), true)
+            collect(await query().or(`title.ilike.%${word}%,topic.ilike.%${word}%`).limit(6))
             if (retrievedDocs.size >= 3) break
           }
         }
@@ -146,6 +152,10 @@ export async function POST(req: NextRequest) {
     }
 
     const finalDocs = [...retrievedDocs.values()]
+      .sort((a, b) => b.titleMatches - a.titleMatches ||
+        Number(b.doc.metadata?.catalogue === 'pm-disease-v1') - Number(a.doc.metadata?.catalogue === 'pm-disease-v1'))
+      .slice(0, 3)
+      .map(({ doc }) => doc)
     const firstDoc = finalDocs[0]
     let rawAiResponse: string
     let answerMode: ChatAnswerMode
