@@ -103,6 +103,7 @@ export default function ChatAssistantPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [authChecking, setAuthChecking] = useState(true)
   const [messages, setMessages] = useState<Message[]>([])
+  const [historyUnavailable, setHistoryUnavailable] = useState(false)
   const [inputMessage, setInputMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [feedbackSending, setFeedbackSending] = useState<string | null>(null)
@@ -122,23 +123,56 @@ export default function ChatAssistantPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
+    const controller = new AbortController()
     async function checkAuth() {
       const supabase = createClient()
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
+      if (controller.signal.aborted) return
       if (!user) {
         router.push('/login')
         return
       }
 
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const [{ data: prof }, { data: history, error }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).abortSignal(controller.signal).single(),
+        supabase.from('chat_logs')
+          .select('id,message,response,created_at,feedback')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .limit(20)
+          .abortSignal(controller.signal),
+      ])
+
+      if (controller.signal.aborted) return
       if (prof) setProfile(prof as Profile)
+      setHistoryUnavailable(Boolean(error))
+      setMessages((history ?? []).slice().reverse().flatMap((entry): Message[] => {
+        const timestamp = new Date(entry.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+        return [
+          { sender: 'user', text: entry.message, timestamp },
+          {
+            id: entry.id,
+            sender: 'sima',
+            text: entry.response.replace(/^\[BLOCKED_BY_GUARDRAIL\] /, ''),
+            chatLogId: entry.id,
+            feedback: entry.feedback === 'helpful' || entry.feedback === 'not_helpful' ? entry.feedback : null,
+            timestamp,
+          },
+        ]
+      }))
       setAuthChecking(false)
     }
 
-    checkAuth()
+    void checkAuth().catch(() => {
+      if (controller.signal.aborted) return
+      setHistoryUnavailable(true)
+      setAuthChecking(false)
+    })
+    return () => controller.abort()
   }, [router])
 
   useEffect(() => {
@@ -210,9 +244,6 @@ export default function ChatAssistantPage() {
   const handleFeedback = async (chatId: string, feedbackType: 'helpful' | 'not_helpful') => {
     if (!chatId || feedbackSending) return
     setFeedbackSending(chatId)
-    setMessages((prev) =>
-      prev.map((message) => (message.chatLogId === chatId ? { ...message, feedback: feedbackType } : message))
-    )
 
     try {
       const response = await fetch(`/api/chat/${chatId}/feedback`, {
@@ -220,9 +251,12 @@ export default function ChatAssistantPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback: feedbackType }),
       })
-      if (response.ok) setFeedbackNotice('Terima kasih, masukan Anda sudah tercatat.')
+      if (!response.ok) throw new Error('Feedback could not be saved')
+      setMessages(prev => prev.map(message => message.chatLogId === chatId ? { ...message, feedback: feedbackType } : message))
+      setFeedbackNotice(t('Terima kasih, masukan Anda sudah tercatat.'))
     } catch (error) {
       console.error('Failed to submit feedback:', error)
+      setFeedbackNotice(t('Masukan belum tersimpan. Silakan coba lagi.'))
     } finally {
       setFeedbackSending(null)
     }
@@ -260,6 +294,9 @@ export default function ChatAssistantPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-jakarta">
       {feedbackNotice && <Toast message={feedbackNotice} onDismiss={() => setFeedbackNotice('')} />}
+      {historyUnavailable && (
+        <p role="status" className="text-sm text-[var(--theme-body)]">{t('Riwayat SIMA tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.')}</p>
+      )}
       {/* TOP PAGE HEADER BAR */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-simantri-900 via-simantri-800 to-slate-900 p-6 sm:p-7 text-white shadow-xl">
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-simantri-500/10 blur-3xl pointer-events-none" />

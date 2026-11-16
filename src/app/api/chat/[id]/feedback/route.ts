@@ -43,7 +43,7 @@ export async function PATCH(
     }
 
     // Update feedback on user's own chat_log
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('chat_logs')
       .update({
         feedback,
@@ -51,12 +51,21 @@ export async function PATCH(
       })
       .eq('id', id)
       .eq('user_id', user.id)
+      .select('id')
+      .maybeSingle()
 
     if (updateError) {
       console.error('Error updating feedback:', updateError)
       return NextResponse.json(
         { data: null, error: { message: updateError.message, code: 'UPDATE_FAILED' } },
         { status: 400 }
+      )
+    }
+
+    if (!updated) {
+      return NextResponse.json(
+        { data: null, error: { message: 'Percakapan tidak ditemukan', code: 'NOT_FOUND' } },
+        { status: 404 }
       )
     }
 

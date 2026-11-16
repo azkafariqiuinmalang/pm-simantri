@@ -222,3 +222,31 @@ test('Chat locale reaches the system instruction, not the retrieval query or res
     else process.env.GEMINI_API_KEY = previousKey
   }
 })
+
+test('Chat feedback acknowledges only an updated row owned by the session user', async () => {
+  const filters = []
+  let updated = null
+  const chain = {
+    update() { return this },
+    eq(column, value) { filters.push([column, value]); return this },
+    select() { return this },
+    async maybeSingle() { return { data: updated, error: null } },
+  }
+  const route = loadTypeScript('src/app/api/chat/[id]/feedback/route.ts', {
+    'next/server': { NextResponse: { json: (body, options) => ({ body, status: options?.status ?? 200 }) } },
+    '@/lib/supabase/server': {
+      createClient: async () => ({
+        auth: { getUser: async () => ({ data: { user: { id: 'petani-b' } } }) },
+        from: () => chain,
+      }),
+    },
+  })
+  const request = { json: async () => ({ feedback: 'helpful' }) }
+  const params = { params: Promise.resolve({ id: 'test-chat' }) }
+  assert.equal((await route.PATCH(request, params)).status, 404)
+  assert.deepEqual(filters, [['id', 'test-chat'], ['user_id', 'petani-b']])
+  updated = { id: 'test-chat' }
+  const result = await route.PATCH(request, params)
+  assert.equal(result.status, 200)
+  assert.equal(result.body.data.feedback, 'helpful')
+})
