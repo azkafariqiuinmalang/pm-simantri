@@ -19,6 +19,7 @@ import {
   X,
   BadgeDollarSign,
   MapPin,
+  Sprout,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
@@ -61,6 +62,7 @@ export default function Sidebar({ profile, isOpen, onClose }: SidebarProps) {
         { label: 'Market Insight PIHPS', href: '/dashboard/harga', icon: TrendingUp },
         { label: 'Marketplace Panen', href: '/dashboard/panen', icon: ShoppingBasket },
         { label: 'Kelola Panen Saya', href: '/dashboard/panen/saya', icon: ClipboardList },
+        { label: 'Rencana Usaha Tani', href: '/dashboard/rencana', icon: Sprout },
       ],
     },
     {

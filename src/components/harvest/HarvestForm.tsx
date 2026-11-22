@@ -8,10 +8,11 @@ import { HarvestBack, HarvestBadge, HarvestNotice, HarvestPhoto, harvestFetch, j
 
 const EMPTY = { title: '', description: '', variety: 'Tajuk', location: '', quantity_kg: '', price_per_kg: '', harvest_date: '', contact: '' }
 type Fields = typeof EMPTY
+export type HarvestPrefill = Partial<Pick<Fields, 'title' | 'description' | 'variety' | 'location' | 'quantity_kg' | 'price_per_kg' | 'harvest_date'>>
 type SelectedPhoto = { file: File; url: string }
-export default function HarvestForm({ id }: { id?: string }) {
+export default function HarvestForm({ id, prefill }: { id?: string; prefill?: HarvestPrefill }) {
   const router = useRouter()
-  const [fields, setFields] = useState<Fields>(EMPTY), [row, setRow] = useState<HarvestListing | null>(null)
+  const [fields, setFields] = useState<Fields>(() => ({ ...EMPTY, ...prefill })), [row, setRow] = useState<HarvestListing | null>(null)
   const rowRef = useRef<HarvestListing | null>(null), photosRef = useRef<SelectedPhoto[]>([])
   const [photos, setPhotos] = useState<SelectedPhoto[]>([])
   const [loading, setLoading] = useState(Boolean(id)), [busy, setBusy] = useState(''), [error, setError] = useState(''), [message, setMessage] = useState(''), [consent, setConsent] = useState(false), [retry,setRetry] = useState(0)

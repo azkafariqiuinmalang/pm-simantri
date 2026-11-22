@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, Leaf, MapPin, Package, ShoppingBasket } from 'lu
 import { STATUS_LABELS, type HarvestListing, type HarvestStatus } from '@/lib/harvest/shared'
 
 export function HarvestNav({ mine = false }: { mine?: boolean }) {
-  return <nav className="pm-tabs w-fit" aria-label="Halaman panen"><Link href="/dashboard/panen" aria-current={!mine ? 'page' : undefined}>Marketplace Panen</Link><Link href="/dashboard/panen/saya" aria-current={mine ? 'page' : undefined}>Kelola Panen Saya</Link></nav>
+  return <nav className="pm-tabs max-w-full w-fit" aria-label="Halaman panen"><Link href="/dashboard/panen" aria-current={!mine ? 'page' : undefined}>Marketplace Panen</Link><Link href="/dashboard/panen/saya" aria-current={mine ? 'page' : undefined}>Kelola Panen Saya</Link><Link href="/dashboard/rencana">Rencana Usaha Tani</Link></nav>
 }
 export function HarvestBadge({ status }: { status: HarvestStatus }) { return <span className="pm-badge" data-status={status}><span aria-hidden="true">●</span>{STATUS_LABELS[status]}</span> }
 export function HarvestPhoto({ row, index = 0, className = '' }: { row: HarvestListing; index?: number; className?: string }) {

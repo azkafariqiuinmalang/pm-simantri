@@ -4,8 +4,8 @@
 | --- | --- |
 | Nama produk | SIMANTRI — Sistem Informasi Pertanian Bawang Merah Terintegrasi |
 | Konteks | Proyek mata kuliah Project Management, terpisah dari versi lomba |
-| Versi dokumen | 1.1 |
-| Tanggal | 2 November 2026, Asia/Jakarta |
+| Versi dokumen | 1.2 — tambahan Rencana Usaha Tani |
+| Tanggal | 21 November 2026, Asia/Jakarta; bagian baseline lain mempertahankan konteks review sebelumnya |
 | Status | Baseline kebutuhan untuk ditinjau tim; bukan pernyataan seluruh fitur telah selesai |
 | Outcome | Prototype aplikasi web yang berfungsi dan diuji secara terbatas, belum disebarluaskan untuk penggunaan umum |
 | Pemilik produk | Peran Product Owner/Project Manager; tidak menggunakan identitas individu |
@@ -74,6 +74,7 @@ Hanya ada dua peran aplikasi: **Petani** dan **Admin**. Pengunjung publik bukan 
 4. Harvest Listing: informasi panen, foto, status ketersediaan, pencarian, kontak penjual, kepemilikan listing, dan moderasi Admin.
 5. Pendukung: autentikasi, profil, pembatasan peran, pengamanan data, tampilan responsif, tema, preferensi bahasa, pengujian dan dokumentasi.
 6. Dunia Brambang sebagai landing page/media edukasi yang dipertahankan, bukan modul model AI baru.
+7. Perubahan disetujui 21 November 2026: Rencana Usaha Tani sebagai fitur tersendiri pendukung Harvest Listing; kebutuhan dan kriteria penerimaan tambahannya tercantum pada bagian 16. Status lama pada bagian lain tidak dianggap sebagai hasil verifikasi ulang.
 
 ### 5.2 Di luar scope
 
@@ -402,3 +403,20 @@ Cadangan biaya tidak dianggap pengeluaran wajib atau pengganti perencanaan biaya
 PRD adalah rujukan kebutuhan dan penerimaan; `PROJECT_CONTEXT.md` mencatat konteks/riwayat teknis. Jika keduanya berbeda, catat perbedaannya untuk review, bukan menghapus batasan atau memperluas scope diam-diam. Perubahan requirement harus mencatat ID terdampak, alasan, dampak biaya/waktu/risiko, PIC, persetujuan dan bukti uji yang diperbarui.
 
 **Riwayat versi:** 1.0 — 26 Oktober 2026: PRD pertama khusus PM setelah pembersihan salinan lomba, berdasarkan diskusi serta kode/dokumentasi lokal; tidak mengubah aplikasi maupun database.
+
+## 16. Perubahan disetujui — Rencana Usaha Tani
+
+Persetujuan pengguna pada 21 November 2026: gabungkan Plan 1 (sesudah panen) dan Plan 2 (sebelum tanam sampai penjualan) dalam fitur tersendiri. Jalur dashboard: `/dashboard/rencana`. Pengembangan ini mendukung Harvest Listing dengan catatan keuangan privat. Harga PIHPS tetap menjadi referensi terpisah; aplikasi tidak memprediksi harga, hasil panen, atau keuntungan.
+
+| ID | Kebutuhan | Kriteria penerimaan |
+| --- | --- | --- |
+| FARM-01 | Dua titik awal perencanaan. | Perencanaan mewajibkan luas lahan; jalur sudah panen mewajibkan berat aktual siap jual. Angka 0 tidak disamakan dengan belum diketahui. |
+| FARM-02 | Anggaran terinci berdasarkan lahan. | Jumlah × harga satuan dan total paket tersedia. Kebutuhan per 1.000 m² berasal dari angka petani, dihitung sesuai luas, lalu disimpan sebagai jumlah total. Tidak ada dosis atau produktivitas buatan. |
+| FARM-03 | Pengeluaran aktual dan perbandingan kategori. | Tanggal dan rincian pengeluaran dapat ditambah/diubah/dihapus. Anggaran dan realisasinya tidak dijumlahkan dua kali. Perubahan yang belum disimpan ditandai; rincian yang masih diisi harus ditambahkan atau dibatalkan sebelum simpan. |
+| FARM-04 | Estimasi laba/rugi, harga impas, dan skenario harga. | Belum dihitung jika masukan pokok belum lengkap. Skenario ±20% diberi konteks sebagai variasi masukan petani. R/C tidak dibagi dengan biaya 0. |
+| FARM-05 | Penjualan bertahap per kg dan tebasan. | Penawaran belum dianggap penjualan. Harga kesepakatan digunakan untuk penerimaan. Penjualan berberat tidak boleh melebihi hasil aktual yang diketahui; tebasan tanpa berat tidak menghasilkan sisa stok rekaan. |
+| FARM-06 | Hasil akhir satu musim. | Pemilik mengonfirmasi seluruh biaya dan memasukkan hasil aktual sebelum menandai selesai. Laba/rugi memakai penjualan serta pengeluaran yang dicatat; sisa panen belum dijual tidak dihitung sebagai penerimaan. |
+| FARM-07 | Hubungan dengan marketplace dan musim berikutnya. | Hasil aktual tersimpan dapat mengisi draf penawaran tanpa menyalin keuangan. Foto/kontak/moderasi tetap berlaku. Salin musim membawa anggaran, tanpa transaksi lama. |
+| FARM-08 | Kepemilikan dan integritas data. | Pengguna lain dan Admin tidak dapat mengakses keuangan pemilik. Tanpa sesi ditolak. Klaim owner dari klien diabaikan dan pembaruan versi lama ditolak 409. |
+
+Implementasi, rumus, dan batasan ada pada `docs/RENCANA_USAHA_TANI.md`. Migrasi baru hanya diterapkan pada Supabase PM. Implementasi dan uji otomatis tidak menggantikan uji penerimaan Petani. Dampak ke baseline waktu/biaya PM perlu dicatat pengelola proyek jika fitur ini dimasukkan ke penilaian monitoring.

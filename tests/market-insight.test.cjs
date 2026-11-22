@@ -133,13 +133,16 @@ test('regional and legacy history use a calendar window, not the last N observat
     ['src/app/api/market/regional/history/route.ts', '/api/market/regional/history?province=16&days=30&end=2026-10-20'],
     ['src/app/api/market/price/history/route.ts', '/api/market/price/history?days=30&end=2026-10-20'],
   ]) {
+    // Retention is relative to today. Keep the requested window inside retention
+    // so this regression remains valid when run after its original October date.
+    const end = pihps.jakartaToday(), start = pihps.calendarDates(end, 30)[0]
     const { route, calls } = readSetup(file, [{ data: [] }])
-    const result = await route.GET(urlRequest(url))
+    const result = await route.GET(urlRequest(url.replace('2026-10-20', end)))
     assert.equal(result.status, 200)
-    assert.equal(result.body.meta.start, '2026-09-21')
-    assert.equal(result.body.meta.end, '2026-10-20')
-    assert.ok(calls.some(call => call.name === 'gte' && call.args[1] === '2026-09-21'))
-    assert.ok(calls.some(call => call.name === 'lte' && call.args[1] === '2026-10-20'))
+    assert.equal(result.body.meta.start, start)
+    assert.equal(result.body.meta.end, end)
+    assert.ok(calls.some(call => call.name === 'gte' && call.args[1] === start))
+    assert.ok(calls.some(call => call.name === 'lte' && call.args[1] === end))
   }
 })
 

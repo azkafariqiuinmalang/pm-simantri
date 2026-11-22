@@ -12,6 +12,7 @@ Kebutuhan produk, alur Petani/Admin, kriteria penerimaan dan gap implementasi ad
 | AI Assistant RAG | Implementasi sebelumnya dipertahankan dengan batas kemampuan versi PM. |
 | Market Insight PIHPS | Empat jenis harga: produsen, pedagang besar, pasar tradisional, dan pasar modern. Filter tanggal/provinsi dan grafik 7/30/60 hari. Tombol Admin mengambil harga terbaru keempat jenis; sinkronisasi berhasil diikuti pembersihan riwayat lebih tua dari 60 hari kalender. Uji nyata 30 hari mengisi 2.685 catatan; data kosong tidak direkayasa. |
 | Harvest Listing | Marketplace Panen dan Kelola Panen Saya: pencarian/filter, detail, draf, foto privat, pengajuan, moderasi Admin dengan catatan, kontak WhatsApp/telepon, serta status habis. Uji terbatas; tanpa pembayaran/pengiriman. Lihat docs/HARVEST_LISTING.md. |
+| Rencana Usaha Tani (pengembangan 21 November 2026) | Dua titik awal: sebelum tanam/budidaya dan sesudah panen. Luas lahan, kebutuhan per 1.000 m², anggaran, pengeluaran, penjualan per kg/tebasan, estimasi laba/rugi, harga impas, dan salin musim. Keuangan privat per pemilik. Draf penawaran dapat diisi dari hasil panen aktual. Lihat [panduan](docs/RENCANA_USAHA_TANI.md). |
 
 Dunia Brambang, login, profil, tema, dan bahasa dipertahankan.
 CV, forecasting, verifikasi Penyuluh, sinyal wilayah, dan usulan pengetahuan tidak lagi menjadi rute aplikasi aktif.
